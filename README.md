@@ -19,7 +19,7 @@ Sure! Add either the class `btproof` to the user. `botbustproof` will also work,
 It could, but it won't. If we messed up, please send a modmail, and we'll get it corrected right away.
 
 
-## What are the permissions needed to run bot?
+## What are the permissions needed to run the bot?
 
 You only need the `Access` and `Post` permissions as of now. (May change in the future)
 
