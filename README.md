@@ -2,9 +2,9 @@
 
     Content is prohibited if it: [...]
 
-        Is spam
+        Is [spam](https://www.reddithelp.com/en/categories/rules-reporting/account-and-community-restrictions/what-constitutes-spam-am-i-spammer)
 
-- Reddit content policy
+\- Reddit content policy
 
 ## What does it do?
 
@@ -18,6 +18,11 @@ Sure! Add either the class `btproof` to the user. `botbustproof` will also work,
 ## Could this be used to ban regular users?
 
 It could, but it won't. If we messed up, please send a modmail, and we'll get it corrected right away.
+
+
+## What are the permissions needed to run bot?
+
+You only need the `Access` and `Post` permissions as of now. (May change in the future)
 
 ## I think I found a bug or have a feature idea.
 
