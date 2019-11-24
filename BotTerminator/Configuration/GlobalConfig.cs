@@ -19,11 +19,11 @@ namespace BotTerminator.Configuration
 		[JsonProperty("blockList")]
 		public List<GlobalBan> GlobalBanList { get; set; } = new List<GlobalBan>();
 
-		[JsonProperty("defaultSubredditOptions", Required = Required.Always)]
-		public SubredditOptions DefaultSubredditOptions { get; set; }
+		[JsonProperty("globalOptions", Required = Required.Always)]
+		public SubredditOptions GlobalOptions { get; set; }
 
 		[JsonProperty("globalIgnoreList")]
-		public String[] GlobalIgnoreList { get; set; } = new[]
+		public IReadOnlyList<String> GlobalIgnoreList { get; set; } = new List<String>(2)
 		{
 			"AutoModerator", "reddit",
 		};

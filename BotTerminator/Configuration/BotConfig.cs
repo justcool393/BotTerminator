@@ -6,7 +6,7 @@ namespace BotTerminator.Configuration
 {
 	public class BotConfig
 	{
-		[JsonProperty("configVersion")]
+		[JsonProperty("configVersion", Required = Required.Always)]
 		public Int32 Version { get; set; }
 
 		public void ValidateSupportedVersion(int minVersion, int maxVersion)

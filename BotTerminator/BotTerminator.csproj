@@ -251,6 +251,8 @@
     <Compile Include="Configuration\AuthenticationConfig.cs" />
     <Compile Include="Configuration\BotConfig.cs" />
     <Compile Include="Configuration\GlobalConfig.cs" />
+    <Compile Include="Configuration\AbstractSubredditOptionSet.cs" />
+    <Compile Include="Configuration\ShadedOptionSet.cs" />
     <Compile Include="Configuration\SubredditOptions.cs" />
     <Compile Include="Exceptions\BotTerminatorException.cs" />
     <Compile Include="Exceptions\UnsupportedConfigVersionException.cs" />

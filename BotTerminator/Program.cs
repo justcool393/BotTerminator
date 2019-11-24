@@ -10,11 +10,13 @@ namespace BotTerminator
 	{
 		private const int minSupportedAuthConfigVersion = 1;
 		private const int maxSupportedAuthConfigVersion = 1;
+		private const String defaultFileName = "config.json";
 
 		public static void Main(string[] args)
 		{
 			Console.WriteLine("Loading configuration file...");
-			AuthenticationConfig config = LoadConfigFlatfile();
+			String fileName = args.Length != 0 ? args[0] : defaultFileName;
+			AuthenticationConfig config = LoadConfigJsonFlatfile(fileName);
 			config.ValidateSupportedVersion(minSupportedAuthConfigVersion, maxSupportedAuthConfigVersion);
 			BotWebAgent botWebAgent = new BotWebAgent(config.Username, config.Password, config.ClientId, config.ClientSecret, config.RedirectUri)
 			{
@@ -26,7 +28,7 @@ namespace BotTerminator
 			terminator.StartAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 		}
 
-		private static AuthenticationConfig LoadConfigFlatfile(String configFileName = "config.json")
+		private static AuthenticationConfig LoadConfigJsonFlatfile(String configFileName = defaultFileName)
 		{
 			String fileData = File.ReadAllText(configFileName);
 			return JsonConvert.DeserializeObject<AuthenticationConfig>(fileData);

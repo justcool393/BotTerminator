@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using BotTerminator.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,33 +8,19 @@ using System.Threading.Tasks;
 
 namespace BotTerminator.Configuration
 {
-	public class SubredditOptions
+	public class SubredditOptions : AbstractSubredditOptionSet
 	{
-		[JsonProperty("banNote")]
-		public String BanNoteRaw { get; set; }
+		public override String BanNote { get; set; }
 
-		[JsonProperty("banMessage")]
-		public String BanMessage { get; set; }
+		public override String BanMessage { get; set; }
 
-		/// <summary>
-		/// The ban duration. Setting this to 0 means that the ban is permanent
-		/// </summary>
-		[JsonProperty("banDuration", Required = Required.DisallowNull)]
-		public Int32 BanDuration { get; set; } = 0;
+		public override Int32 BanDuration { get; set; } = 0;
 
-		public String[] IgnoredUsers { get; set; } = new[]
+		public override IEnumerable<String> IgnoredUsers { get; set; } = new List<String>(2)
 		{
 			"AutoModerator", "reddit",
 		};
 
-		/// <summary>
-		/// How an item that matches our rules is treated. By default, this
-		/// is to remove as spam.
-		/// </summary>
-		/// <see cref="RemovalType"/>
-		/// <see cref="RedditSharp.Things.ModeratableThing.RemoveAsync"/>
-		/// <see cref="RedditSharp.Things.ModeratableThing.RemoveSpamAsync"/>
-		[JsonProperty("removalType")]
-		public RemovalType RemovalType { get; set; } = RemovalType.Spam;
+		public override RemovalType RemovalType { get; set; } = RemovalType.Spam;
 	}
 }
