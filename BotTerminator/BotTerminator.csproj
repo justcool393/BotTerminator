@@ -250,13 +250,17 @@
     <Compile Include="BotTerminator.cs" />
     <Compile Include="Configuration\AuthenticationConfig.cs" />
     <Compile Include="Configuration\BotConfig.cs" />
+    <Compile Include="Configuration\GlobalConfig.cs" />
+    <Compile Include="Configuration\SubredditOptions.cs" />
     <Compile Include="Exceptions\BotTerminatorException.cs" />
     <Compile Include="Exceptions\UnsupportedConfigVersionException.cs" />
     <Compile Include="IBotDatabase.cs" />
     <Compile Include="MemoryBotDatabase.cs" />
+    <Compile Include="Models\GlobalBan.cs" />
     <Compile Include="NullBotDatabase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RemovalType.cs" />
     <Compile Include="SQLiteBotDatabase.cs" />
     <Compile Include="WikiBotDatabase.cs" />
   </ItemGroup>
