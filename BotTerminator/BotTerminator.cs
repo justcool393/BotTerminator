@@ -48,12 +48,13 @@ namespace BotTerminator
 							pms.Add(pm);
 						}
 					});
+					const String modInviteMsg = "invitation to moderate /r/";
 					foreach (PrivateMessage m in pms)
 					{
 						await m.SetAsReadAsync();
-						if (m.Subreddit != null && m.FirstMessageName == null && m.Subject.StartsWith("invitation to moderate /r/"))
+						if (m.Subreddit != null && m.FirstMessageName == null && m.Subject.StartsWith(modInviteMsg))
 						{
-							String srName = m.Subject.Substring(m.Subject.IndexOf("invitation to moderate /r/"));
+							String srName = m.Subject.Substring(m.Subject.IndexOf(modInviteMsg) + modInviteMsg.Length);
 							if (String.IsNullOrWhiteSpace(srName))
 							{
 								continue; // handle weird edge case where the subject is literally just "invitation to moderate /r/"
@@ -61,13 +62,13 @@ namespace BotTerminator
 							try
 							{
 								await (await r.GetSubredditAsync(srName, false)).AcceptModeratorInviteAsync();
-								await SrCacheUpdateAsync();
 								Console.WriteLine("Accepted moderator invite to /r/{0}", srName);
 							}
 							catch (Exception ex)
 							{
 								Console.WriteLine("Failed to accept moderator invite for subreddit /r/{0}: {1}", srName, ex.Message);
 							}
+							await SrCacheUpdateAsync();
 						}
 					}
 				}
@@ -142,9 +143,9 @@ namespace BotTerminator
 
 		public async Task StartNewBanUpdateLoopAsync()
 		{
+			Console.WriteLine("Starting config updater loop...");
 			while (true)
 			{
-				Console.WriteLine("Starting config updater loop...");
 				try
 				{
 					List<Post> posts = new List<Post>();
