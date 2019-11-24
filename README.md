@@ -1,8 +1,7 @@
 # /u/BotTerminator for removing those spammy bots
 
-    Content is prohibited if it: [...]
-
-        Is [spam](https://www.reddithelp.com/en/categories/rules-reporting/account-and-community-restrictions/what-constitutes-spam-am-i-spammer)
+> Content is prohibited if it: [...]
+>   - Is [spam](https://www.reddithelp.com/en/categories/rules-reporting/account-and-community-restrictions/what-constitutes-spam-am-i-spammer)
 
 \- Reddit content policy
 
