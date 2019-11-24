@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using BotTerminator.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RedditSharp;
 using RedditSharp.Things;
@@ -12,7 +13,16 @@ namespace BotTerminator
 {
 	public class WikiBotDatabase : IBotDatabase
 	{
+		private const String pageName = "botconfig/botterminator/banned";
+
 		private Wiki SrWiki { get; set; }
+
+		private BanListConfig Cache { get; set; } = new BanListConfig();
+
+		private DateTimeOffset LastUpdatedAtUtc { get; set; } = DateTimeOffset.MinValue;
+
+		private static readonly TimeSpan staleTimeSpan = new TimeSpan(0, 10, 0);
+		public Boolean IsStale => Cache.Items.Count == 0 || DateTimeOffset.UtcNow - LastUpdatedAtUtc > staleTimeSpan;
 
 		public WikiBotDatabase(Subreddit sr)
 		{
@@ -21,17 +31,28 @@ namespace BotTerminator
 
 		public async Task<Boolean> CheckUserAsync(String name)
 		{
-			String mdData = (await SrWiki.GetPageAsync("botconfig/botterminator/banned")).MarkdownContent;
-			BanList b = JsonConvert.DeserializeObject<BanList>(mdData);
-			return b.Items.Contains(name);
+			if (IsStale)
+			{
+				await GetUpdatedListFromWikiAsync();
+				LastUpdatedAtUtc = DateTimeOffset.UtcNow;
+			}
+			return Cache.Items.Contains(name);
 		}
 
 		public async Task UpdateUserAsync(String name, Boolean value)
 		{
-			String mdData = (await SrWiki.GetPageAsync("botconfig/botterminator/banned")).MarkdownContent;
-			BanList b = JsonConvert.DeserializeObject<BanList>(mdData);
-			b.Items.Add(name);
-			await SrWiki.EditPageAsync("botconfig/botterminator/banned", JsonConvert.SerializeObject(b));
+			Cache.Items.Add(name);
+			if (IsStale)
+			{
+				await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(Cache));
+				LastUpdatedAtUtc = DateTimeOffset.UtcNow;
+			}
+		}
+
+		private async Task GetUpdatedListFromWikiAsync()
+		{
+			String mdData = (await SrWiki.GetPageAsync(pageName)).MarkdownContent;
+			Cache = JsonConvert.DeserializeObject<BanListConfig>(mdData);
 		}
 	}
 }

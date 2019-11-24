@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using BotTerminator.Configuration;
+using Newtonsoft.Json.Linq;
 using RedditSharp;
 using RedditSharp.Things;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -12,15 +14,19 @@ namespace BotTerminator
 {
 	public class BotTerminator
 	{
-		private static Regex re = new Regex(@"https://(?:www|old|new|np|beta)\.reddit\.com/user/([A-z_-]+)");
+		private static Regex re = new Regex(@"https://(?:www|old|new|np|beta)\.reddit\.com//?user/([\w_-]+)");
 
+		private readonly IWebAgent a;
 		private readonly Reddit r;
-		private readonly String srName;
+		private readonly AuthenticationConfig config;
 
-		public BotTerminator(Reddit r, String srName)
+		private String SrName => config.SrName;
+
+		public BotTerminator(IWebAgent a, Reddit r, AuthenticationConfig config)
 		{
+			this.a = a;
 			this.r = r;
-			this.srName = srName;
+			this.config = config;
 		}
 
 		private Dictionary<String, Subreddit> SrLookup { get; set; } = new Dictionary<String, Subreddit>();
@@ -28,9 +34,23 @@ namespace BotTerminator
 
 		public async Task StartAsync()
 		{
-			UserLookup = new WikiBotDatabase(await r.GetSubredditAsync(srName, false));
+			UserLookup = new WikiBotDatabase(await r.GetSubredditAsync(SrName, false));
 			await SrCacheUpdateAsync();
-			await Task.WhenAll(StartCommentLoopAsync(), StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartInviteAcceptorLoopAsync());
+			await Task.WhenAll(StartCommentLoopAsync(), StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartInviteAcceptorLoopAsync(), StartMakeSureCacheFreshLoopAsync());
+		}
+
+		private async Task StartMakeSureCacheFreshLoopAsync()
+		{
+			Console.WriteLine("Starting cache freshener loop");
+			while (true)
+			{
+				try
+				{
+					await UserLookup.CheckUserAsync("reddit");
+					await Task.Delay(new TimeSpan(0, 10, 0));
+				}
+				catch { } // we don't really care
+			}
 		}
 
 		private async Task StartInviteAcceptorLoopAsync()
@@ -86,7 +106,7 @@ namespace BotTerminator
 			{
 				try
 				{
-					await Task.Delay(60000);
+					await Task.Delay(new TimeSpan(0, 10, 0));
 					await SrCacheUpdateAsync();
 				}
 				catch (Exception ex)
@@ -119,9 +139,11 @@ namespace BotTerminator
 				try
 				{
 					List<Comment> comments = new List<Comment>();
-					await r.GetListing<Comment>("/r/mod/comments", -1, 100).ForEachAsync(c =>
+					await r.GetListing<Comment>("/r/mod/comments", 250, 100).ForEachAsync(c =>
 					{
 						if (IsUnbannable(c) || (c.BannedBy != null || c.BannedBy == r.User.Name)) return;
+						// all distinguishes are given to moderators (who can't be banned) or known humans
+						if (c.Distinguished != ModeratableThing.DistinguishType.None) return;
 						comments.Add(c);
 					});
 
@@ -144,12 +166,13 @@ namespace BotTerminator
 		public async Task StartNewBanUpdateLoopAsync()
 		{
 			Console.WriteLine("Starting config updater loop...");
+			await UserLookup.CheckUserAsync("reddit");
 			while (true)
 			{
 				try
 				{
 					List<Post> posts = new List<Post>();
-					await r.GetListing<Post>("/r/" + srName + "/new", -1, 100).ForEachAsync(p =>
+					await r.GetListing<Post>("/r/" + SrName + "/new", -1, 100).ForEachAsync(p =>
 					{
 						if (p.LinkFlairText != "Banned") return;
 						if (p.IsHidden) return;
@@ -167,10 +190,17 @@ namespace BotTerminator
 						{
 							continue;
 						}
-						Console.WriteLine("found target " + m.Groups[1].Value);
+						Console.WriteLine("Found new bot to ban " + m.Groups[1].Value);
 						String target = m.Groups[1].Value;
 						await UserLookup.UpdateUserAsync(target, true);
-						await p.HideAsync();
+					}
+					// hide all of them at once
+					if (posts.Count > 0)
+					{
+						for (int i = 0; i < posts.Count; i+=25)
+						{
+							await a.ExecuteRequestAsync(() => a.CreateRequest("/api/hide?id=" + String.Join(",", posts.Select(s => s.FullName).Skip(i).Take(25)), "POST"));
+						}
 					}
 				}
 				catch (Exception ex)

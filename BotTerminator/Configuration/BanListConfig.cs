@@ -5,15 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BotTerminator
+namespace BotTerminator.Configuration
 {
 	[JsonObject]
-	public class BanList
+	public class BanListConfig
 	{
 		[JsonProperty("configVersion")]
-		public Int64 Version { get; set; }
+		public Int64 Version { get; set; } = 1;
 
 		[JsonProperty("bannedUsers")]
-		public List<String> Items { get; set; }
+		public HashSet<String> Items { get; set; } = new HashSet<String>();
 	}
 }

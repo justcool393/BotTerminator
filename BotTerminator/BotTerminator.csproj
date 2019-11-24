@@ -246,8 +246,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BanList.cs" />
+    <Compile Include="Configuration\BanListConfig.cs" />
     <Compile Include="BotTerminator.cs" />
+    <Compile Include="Configuration\AuthenticationConfig.cs" />
+    <Compile Include="Configuration\BotConfig.cs" />
+    <Compile Include="Exceptions\BotTerminatorException.cs" />
+    <Compile Include="Exceptions\UnsupportedConfigVersionException.cs" />
     <Compile Include="IBotDatabase.cs" />
     <Compile Include="MemoryBotDatabase.cs" />
     <Compile Include="NullBotDatabase.cs" />
