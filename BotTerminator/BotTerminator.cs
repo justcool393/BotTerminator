@@ -30,11 +30,57 @@ namespace BotTerminator
 		{
 			UserLookup = new WikiBotDatabase(await r.GetSubredditAsync(srName, false));
 			await SrCacheUpdateAsync();
-			await Task.WhenAll(StartCommentLoopAsync(), StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartSrCacheUpdateLoopAsync());
+			await Task.WhenAll(StartCommentLoopAsync(), StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartInviteAcceptorLoopAsync());
+		}
+
+		private async Task StartInviteAcceptorLoopAsync()
+		{
+			Console.WriteLine("Starting invite acceptor loop...");
+			while (true)
+			{
+				try
+				{
+					List<PrivateMessage> pms = new List<PrivateMessage>();
+					await r.User.GetUnreadMessages(-1).ForEachAsync(m =>
+					{
+						if (m is PrivateMessage pm)
+						{
+							pms.Add(pm);
+						}
+					});
+					foreach (PrivateMessage m in pms)
+					{
+						await m.SetAsReadAsync();
+						if (m.Subreddit != null && m.FirstMessageName == null && m.Subject.StartsWith("invitation to moderate /r/"))
+						{
+							String srName = m.Subject.Substring(m.Subject.IndexOf("invitation to moderate /r/"));
+							if (String.IsNullOrWhiteSpace(srName))
+							{
+								continue; // handle weird edge case where the subject is literally just "invitation to moderate /r/"
+							}
+							try
+							{
+								await (await r.GetSubredditAsync(srName, false)).AcceptModeratorInviteAsync();
+								await SrCacheUpdateAsync();
+								Console.WriteLine("Accepted moderator invite to /r/{0}", srName);
+							}
+							catch (Exception ex)
+							{
+								Console.WriteLine("Failed to accept moderator invite for subreddit /r/{0}: {1}", srName, ex.Message);
+							}
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine("Failed to run accept invite loop: {0}", ex.Message);
+				}
+			}
 		}
 
 		private async Task StartSrCacheUpdateLoopAsync()
 		{
+			Console.WriteLine("Starting subreddit cache update loop...");
 			while (true)
 			{
 				try
@@ -66,6 +112,7 @@ namespace BotTerminator
 
 		public async Task StartCommentLoopAsync()
 		{
+			Console.WriteLine("Starting comment loop...");
 			while (true)
 			{
 				try
@@ -97,10 +144,11 @@ namespace BotTerminator
 		{
 			while (true)
 			{
+				Console.WriteLine("Starting config updater loop...");
 				try
 				{
 					List<Post> posts = new List<Post>();
-					await r.GetListing<Post>("/r/BotTerminator/new", -1, 100).ForEachAsync(p =>
+					await r.GetListing<Post>("/r/" + srName + "/new", -1, 100).ForEachAsync(p =>
 					{
 						if (p.LinkFlairText != "Banned") return;
 						if (p.IsHidden) return;
