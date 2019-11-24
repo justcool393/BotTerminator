@@ -12,25 +12,25 @@ namespace BotTerminator
 {
 	public class BotTerminator
 	{
-		private static Regex re = new Regex(@"https://(?:www|old|new|np|beta)\.reddit\.com/user/([A-z_-]+)");
+		private static Regex UserUrlRegex = new Regex(@"https://(?:www|old|new|np|beta)\.reddit\.com/user/([A-z_-]+)");
 
-		private readonly Reddit r;
-		private readonly String srName;
+		private readonly Reddit RedditClient;
+		private readonly String DataSubredditName;
 
-		public BotTerminator(Reddit r, String srName)
+		public BotTerminator(Reddit redditClient, String dataSubredditName)
 		{
-			this.r = r;
-			this.srName = srName;
+			this.RedditClient = redditClient;
+			this.DataSubredditName = dataSubredditName;
 		}
 
-		private Dictionary<String, Subreddit> SrLookup { get; set; } = new Dictionary<String, Subreddit>();
-		private IBotDatabase UserLookup { get; set; }
+		private Dictionary<String, Subreddit> Subreddits { get; set; } = new Dictionary<String, Subreddit>();
+		private IBotDatabase UserDatabase { get; set; }
 
 		public async Task StartAsync()
 		{
-			UserLookup = new WikiBotDatabase(await r.GetSubredditAsync(srName, false));
-			await SrCacheUpdateAsync();
-			await Task.WhenAll(StartCommentLoopAsync(), StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartInviteAcceptorLoopAsync());
+			this.UserDatabase = new WikiBotDatabase(await this.RedditClient.GetSubredditAsync(this.DataSubredditName, false));
+			await SubredditCacheUpdateAsync();
+			await Task.WhenAll(StartCommentLoopAsync(), StartNewBanUpdateLoopAsync(), StartSubredditCacheUpdateLoopAsync(), StartSubredditCacheUpdateLoopAsync(), StartInviteAcceptorLoopAsync());
 		}
 
 		private async Task StartInviteAcceptorLoopAsync()
@@ -41,7 +41,7 @@ namespace BotTerminator
 				try
 				{
 					List<PrivateMessage> pms = new List<PrivateMessage>();
-					await r.User.GetUnreadMessages(-1).ForEachAsync(m =>
+					await this.RedditClient.User.GetUnreadMessages(-1).ForEachAsync(m =>
 					{
 						if (m is PrivateMessage pm)
 						{
@@ -61,14 +61,14 @@ namespace BotTerminator
 							}
 							try
 							{
-								await (await r.GetSubredditAsync(srName, false)).AcceptModeratorInviteAsync();
+								await (await this.RedditClient.GetSubredditAsync(srName, false)).AcceptModeratorInviteAsync();
 								Console.WriteLine("Accepted moderator invite to /r/{0}", srName);
 							}
 							catch (Exception ex)
 							{
 								Console.WriteLine("Failed to accept moderator invite for subreddit /r/{0}: {1}", srName, ex.Message);
 							}
-							await SrCacheUpdateAsync();
+							await SubredditCacheUpdateAsync();
 						}
 					}
 				}
@@ -79,7 +79,7 @@ namespace BotTerminator
 			}
 		}
 
-		private async Task StartSrCacheUpdateLoopAsync()
+		private async Task StartSubredditCacheUpdateLoopAsync()
 		{
 			Console.WriteLine("Starting subreddit cache update loop...");
 			while (true)
@@ -87,7 +87,7 @@ namespace BotTerminator
 				try
 				{
 					await Task.Delay(60000);
-					await SrCacheUpdateAsync();
+					await SubredditCacheUpdateAsync();
 				}
 				catch (Exception ex)
 				{
@@ -96,17 +96,17 @@ namespace BotTerminator
 			}
 		}
 
-		private async Task SrCacheUpdateAsync()
+		private async Task SubredditCacheUpdateAsync()
 		{
-			await r.User.GetModeratorSubreddits(-1).ForEachAsync(sr =>
+			await this.RedditClient.User.GetModeratorSubreddits(-1).ForEachAsync(sr =>
 			{
-				if (!SrLookup.ContainsKey(sr.DisplayName))
+				if (!this.Subreddits.ContainsKey(sr.DisplayName))
 				{
-					SrLookup.Add(sr.DisplayName, sr);
+					this.Subreddits.Add(sr.DisplayName, sr);
 				}
 				else
 				{
-					SrLookup[sr.DisplayName] = sr;
+					this.Subreddits[sr.DisplayName] = sr;
 				}
 			});
 		}
@@ -119,9 +119,9 @@ namespace BotTerminator
 				try
 				{
 					List<Comment> comments = new List<Comment>();
-					await r.GetListing<Comment>("/r/mod/comments", -1, 100).ForEachAsync(c =>
+					await this.RedditClient.GetListing<Comment>("/r/mod/comments", -1, 100).ForEachAsync(c =>
 					{
-						if (IsUnbannable(c) || (c.BannedBy != null || c.BannedBy == r.User.Name)) return;
+						if (IsUnbannable(c) || (c.BannedBy != null || c.BannedBy == this.RedditClient.User.Name)) return;
 						comments.Add(c);
 					});
 
@@ -129,7 +129,7 @@ namespace BotTerminator
 					{
 						if (await CheckShouldBanAsync(c))
 						{
-							await Task.WhenAll(c.RemoveSpamAsync(), SrLookup[c.Subreddit].BanUserAsync(c.AuthorName, "spam", "botterminator banned", 0, String.Empty));
+							await Task.WhenAll(c.RemoveSpamAsync(), this.Subreddits[c.Subreddit].BanUserAsync(c.AuthorName, "spam", "botterminator banned", 0, String.Empty));
 						}
 					}
 				}
@@ -149,16 +149,16 @@ namespace BotTerminator
 				try
 				{
 					List<Post> posts = new List<Post>();
-					await r.GetListing<Post>("/r/" + srName + "/new", -1, 100).ForEachAsync(p =>
+					await this.RedditClient.GetListing<Post>("/r/" + this.DataSubredditName + "/new", -1, 100).ForEachAsync(p =>
 					{
 						if (p.LinkFlairText != "Banned") return;
 						if (p.IsHidden) return;
 						posts.Add(p);
 					});
-					foreach (Post p in posts)
+					foreach (Post post in posts)
 					{
 
-						Match m = re.Match(p["url"].Value<String>().Trim());
+						Match m = UserUrlRegex.Match(post["url"].Value<String>().Trim());
 						if (m == null)
 						{
 							continue;
@@ -169,8 +169,8 @@ namespace BotTerminator
 						}
 						Console.WriteLine("found target " + m.Groups[1].Value);
 						String target = m.Groups[1].Value;
-						await UserLookup.UpdateUserAsync(target, true);
-						await p.HideAsync();
+						await this.UserDatabase.UpdateUserAsync(target, true);
+						await post.HideAsync();
 					}
 				}
 				catch (Exception ex)
@@ -192,7 +192,7 @@ namespace BotTerminator
 			{
 				return false;
 			}
-			return await UserLookup.CheckUserAsync(c.AuthorName);
+			return await this.UserDatabase.CheckUserAsync(c.AuthorName);
 		}
 	}
 }

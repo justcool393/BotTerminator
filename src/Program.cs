@@ -1,5 +1,4 @@
-﻿using JcBotAuth.Reddit;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RedditSharp;
 using System;
