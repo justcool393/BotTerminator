@@ -12,7 +12,7 @@ namespace BotTerminator
 {
 	public class BotTerminator
 	{
-		private static Regex UserUrlRegex = new Regex(@"https://(?:www|old|new|np|beta)\.reddit\.com/user/[\w-]+/?");
+		private static Regex UserUrlRegex = new Regex(@"https://(?:www|old|new|np|beta)\.reddit\.com/user/([\w-]+)/?");
 
 		private readonly Reddit RedditClient;
 		private readonly String DataSubredditName;
@@ -158,17 +158,12 @@ namespace BotTerminator
 					foreach (Post post in posts)
 					{
 
-						Match m = UserUrlRegex.Match(post["url"].Value<String>().Trim());
-						if (m == null)
-						{
+						Match urlMatch = UserUrlRegex.Match(post.Url.ToString());
+						if( !urlMatch.Success )
 							continue;
-						}
-						else if (m.Groups.Count != 2)
-						{
-							continue;
-						}
-						Console.WriteLine("found target " + m.Groups[1].Value);
-						String target = m.Groups[1].Value;
+
+						Console.WriteLine("found target " + urlMatch.Groups[1].Value);
+						String target = urlMatch.Groups[1].Value;
 						await this.UserDatabase.UpdateUserAsync(target, true);
 						await post.HideAsync();
 					}
