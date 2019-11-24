@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BotTerminator
+{
+	public interface IBotDatabase
+	{
+		Task<bool> CheckUserAsync(String name);
+
+		Task UpdateUserAsync(String name, bool value);
+	}
+}
