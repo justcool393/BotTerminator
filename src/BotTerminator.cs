@@ -12,7 +12,7 @@ namespace BotTerminator
 {
 	public class BotTerminator
 	{
-		private static Regex UserUrlRegex = new Regex(@"https://(?:www|old|new|np|beta)\.reddit\.com/user/([A-z_-]+)");
+		private static Regex UserUrlRegex = new Regex(@"https://(?:www|old|new|np|beta)\.reddit\.com/user/[\w-]+/?");
 
 		private readonly Reddit RedditClient;
 		private readonly String DataSubredditName;
