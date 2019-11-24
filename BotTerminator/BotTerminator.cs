@@ -5,6 +5,8 @@ using RedditSharp.Things;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -82,7 +84,8 @@ namespace BotTerminator
 					const String modInviteMsg = "invitation to moderate /r/";
 					foreach (PrivateMessage privateMessage in privateMessages)
 					{
-						await privateMessage.SetAsReadAsync();
+						bool shouldMarkRead = true;
+
 						if (privateMessage.Subreddit != null && privateMessage.FirstMessageName == null && privateMessage.Subject.StartsWith(modInviteMsg))
 						{
 							String srName = privateMessage.Subject.Substring(privateMessage.Subject.IndexOf(modInviteMsg) + modInviteMsg.Length);
@@ -95,9 +98,36 @@ namespace BotTerminator
 								await (await reddit.GetSubredditAsync(srName, false)).AcceptModeratorInviteAsync();
 								Console.WriteLine("Accepted moderator invite to /r/{0}", srName);
 							}
+							catch (RedditHttpException ex)
+							{
+								// This is the best we can do without an update to the library
+								if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+								{
+									try
+									{
+										await QuarantineOptInAsync(srName);
+										shouldMarkRead = false;
+									}
+									catch (Exception subException)
+									{
+										Console.WriteLine("Failed to opt in to the quarantine (if it exists): {0}", subException.Message);
+									}
+								}
+							}
 							catch (Exception ex)
 							{
 								Console.WriteLine("Failed to accept moderator invite for subreddit /r/{0}: {1}", srName, ex.Message);
+							}
+						}
+						if (shouldMarkRead)
+						{
+							try
+							{
+								await privateMessage.SetAsReadAsync();
+							}
+							catch (Exception ex)
+							{
+								Console.WriteLine("Failed to mark message {0} as read: {1}", privateMessage.FullName, ex.Message);
 							}
 						}
 					}
@@ -250,6 +280,16 @@ namespace BotTerminator
 				return false;
 			}
 			return await UserLookup.CheckUserAsync(comment.AuthorName);
+		}
+
+		private async Task QuarantineOptInAsync(String subredditName)
+		{
+			const string requestVerb = "POST";
+			await webAgent.ExecuteRequestAsync(() => {
+				HttpRequestMessage request = webAgent.CreateRequest(QuarantineOptInUrl, requestVerb);
+				request.Content = new StringContent("sr_name=" + subredditName, Encoding.UTF8);
+				return request;
+			});
 		}
 	}
 }
