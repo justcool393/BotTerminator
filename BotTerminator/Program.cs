@@ -1,15 +1,8 @@
 ﻿using BotTerminator.Configuration;
-using BotTerminator.Exceptions;
-using JcBotAuth.Reddit;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RedditSharp;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BotTerminator
 {
@@ -20,7 +13,7 @@ namespace BotTerminator
 
 		public static void Main(string[] args)
 		{
-			Console.WriteLine("starting");
+			Console.WriteLine("Loading configuration file...");
 			AuthenticationConfig config = LoadConfigFlatfile();
 			config.ValidateSupportedVersion(minSupportedAuthConfigVersion, maxSupportedAuthConfigVersion);
 			BotWebAgent botWebAgent = new BotWebAgent(config.Username, config.Password, config.ClientId, config.ClientSecret, config.RedirectUri)
@@ -28,6 +21,7 @@ namespace BotTerminator
 				//UserAgent = "BotTerminator v1.0.0.0 - /r/" + config.SrName,
 			};
 			Reddit r = new Reddit(botWebAgent, true);
+			Console.WriteLine("Starting BotTerminator...");
 			BotTerminator terminator = new BotTerminator(botWebAgent, r, config);
 			terminator.StartAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 		}

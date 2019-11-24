@@ -1,12 +1,8 @@
 ﻿using BotTerminator.Configuration;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RedditSharp;
 using RedditSharp.Things;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BotTerminator

@@ -1,9 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BotTerminator.Configuration
 {
@@ -25,6 +21,6 @@ namespace BotTerminator.Configuration
 		public String RedirectUri { get; set; }
 
 		[JsonProperty("srName")]
-		public String SrName { get; set; } = "BotTerminator";
+		public String SubredditName { get; set; } = "BotTerminator";
 	}
 }
