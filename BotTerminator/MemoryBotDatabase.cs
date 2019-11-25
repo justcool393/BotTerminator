@@ -12,7 +12,7 @@ namespace BotTerminator
 
 		public Task<Boolean> CheckUserAsync(String name) => Task.FromResult(Users.Contains(name));
 
-		public Task UpdateUserAsync(String name, Boolean value)
+		public Task UpdateUserAsync(String name, Boolean value, Boolean force)
 		{
 			if (value)
 			{

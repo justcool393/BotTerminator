@@ -10,6 +10,6 @@ namespace BotTerminator
 	{
 		Task<bool> CheckUserAsync(String name);
 
-		Task UpdateUserAsync(String name, bool value);
+		Task UpdateUserAsync(String name, Boolean value, Boolean force = false);
 	}
 }

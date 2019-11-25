@@ -16,7 +16,6 @@ namespace BotTerminator
 {
 	public class BotTerminator
 	{
-		private static readonly Regex usernameRegex = new Regex(@"https?://(?:(?:www|old|new|[A-z]{2}|alpha|beta|ssl|pay)\.)?RedditInstance\.com//?u(?:ser)?/([\w_-]+)");
 		private static readonly String[] ignoreAuthorCssClasses = new[]
 		{
 			"btproof", "botbustproof",
@@ -75,14 +74,9 @@ namespace BotTerminator
 			Modules = new List<BotModule>()
 			{
 				new CommentScannerModule(this), new InviteAcceptorModule(this),
-				new CacheFreshenerModule(this),
+				new CacheFreshenerModule(this), new UpdateBanListModule(this),
 			};
-
-			IEnumerable<Task> tasks = Modules.Select(s => s.RunForeverAsync()).Concat(new Task[]
-			{
-				StartNewBanUpdateLoopAsync(),
-			});
-			await Task.WhenAll(tasks);
+			await Task.WhenAll(Modules.Select(s => s.RunForeverAsync()));
 		}
 
 		public async Task UpdateSubredditCacheAsync()
@@ -124,43 +118,7 @@ namespace BotTerminator
 			{
 				try
 				{
-					List<Post> posts = new List<Post>();
-					await RedditInstance.GetListing<Post>("/r/" + SubredditName + "/new", -1, PageLimit).ForEachAsync(post =>
-					{
-						if (post?.LinkFlairText == null || (post.LinkFlairText != "Banned" && post.LinkFlairText != "Meta")) return;
-						if (post.IsHidden) return;
-						posts.Add(post);
-					});
-					foreach (Post post in posts)
-					{
-						// We don't need to even look at meta posts
-						if (post.LinkFlairText == "Meta") continue;
-
-						/* 
-						 * We don't use the post.Url property here because if the Url is not a
-						 * well formed URI, RedditSharp throws an UriFormatException. The cases
-						 * where this is a problem is exceedingly rare, but it is possible.
-						 */
-						Match match = usernameRegex.Match(post["url"].Value<String>().Trim());
-						if (match == null || match.Groups.Count != 2)
-						{
-							continue;
-						}
-						Console.WriteLine("Found new bot to ban " + match.Groups[1].Value);
-						String targetUserName = match.Groups[1].Value;
-						await UserLookup.UpdateUserAsync(targetUserName, true);
-					}
-
-					// hide all of them at once
-					if (posts.Count > 0)
-					{
-						const String requestVerb = "POST";
-						for (int i = 0; i < posts.Count; i+=25)
-						{
-							String formattedUrl = String.Format("{0}?id={1}", HideUrl, String.Join(",", posts.Select(s => s.FullName).Skip(i).Take(25)));
-							await WebAgent.ExecuteRequestAsync(() => WebAgent.CreateRequest(formattedUrl, requestVerb));
-						}
-					}
+					
 				}
 				catch (Exception ex)
 				{
