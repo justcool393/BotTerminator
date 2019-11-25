@@ -94,41 +94,6 @@ namespace BotTerminator
 			});
 		}
 
-		public async Task StartCommentLoopAsync()
-		{
-			Console.WriteLine("Starting comment loop");
-			while (true)
-			{
-				try
-				{
-					
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex.ToString());
-				}
-				await Task.Delay(5000);
-			}
-		}
-
-		public async Task StartNewBanUpdateLoopAsync()
-		{
-			Console.WriteLine("Starting config updater loop");
-			while (true)
-			{
-				try
-				{
-					
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex.ToString());
-				}
-
-				await Task.Delay(5000);
-			}
-		}
-
 		/// <summary>
 		/// Checks whether this user is ineligible to be banned. The only case where
 		/// this currently returns <see langword="true" /> is when the <paramref name="comment"/>
