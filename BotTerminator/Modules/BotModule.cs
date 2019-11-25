@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BotTerminator.Configuration;
+using RedditSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +11,9 @@ namespace BotTerminator.Modules
 	public abstract class BotModule
 	{
 		protected BotTerminator bot;
+
+		protected GlobalConfig GlobalConfig => bot.GlobalConfig;
+		protected Reddit RedditInstance => bot.RedditInstance;
 
 		public BotModule(BotTerminator bot)
 		{
