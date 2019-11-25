@@ -71,9 +71,15 @@ namespace BotTerminator
 			UserLookup = new WikiBotDatabase(await RedditInstance.GetSubredditAsync(SubredditName, false));
 			await UserLookup.CheckUserAsync(CacheFreshenerUserName);
 			await SrCacheUpdateAsync();
+
+			Modules = new List<BotModule>()
+			{
+				new CommentScannerModule(this), new InviteAcceptorModule(this),
+			};
+
 			IEnumerable<Task> tasks = Modules.Select(s => s.RunForeverAsync()).Concat(new Task[]
 			{
-				StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartInviteAcceptorLoopAsync(), StartMakeSureCacheFreshLoopAsync()
+				StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartMakeSureCacheFreshLoopAsync()
 			});
 			await Task.WhenAll(tasks);
 		}
@@ -89,80 +95,6 @@ namespace BotTerminator
 					await Task.Delay(new TimeSpan(0, 10, 0));
 				}
 				catch { } // we don't really care
-			}
-		}
-
-		private async Task StartInviteAcceptorLoopAsync()
-		{
-			Console.WriteLine("Starting invite acceptor loop");
-			while (true)
-			{
-				try
-				{
-					List<PrivateMessage> privateMessages = new List<PrivateMessage>();
-					await RedditInstance.User.GetUnreadMessages(-1).ForEachAsync(unreadMessage =>
-					{
-						if (unreadMessage is PrivateMessage message)
-						{
-							privateMessages.Add(message);
-						}
-					});
-					const String modInviteMsg = "invitation to moderate /r/";
-					foreach (PrivateMessage privateMessage in privateMessages)
-					{
-						bool shouldMarkRead = true;
-
-						if (privateMessage.Subreddit != null && privateMessage.FirstMessageName == null && privateMessage.Subject.StartsWith(modInviteMsg))
-						{
-							String srName = privateMessage.Subject.Substring(privateMessage.Subject.IndexOf(modInviteMsg) + modInviteMsg.Length);
-							if (String.IsNullOrWhiteSpace(srName))
-							{
-								continue; // handle weird edge case where the subject is literally just "invitation to moderate /r/"
-							}
-							try
-							{
-								await (await RedditInstance.GetSubredditAsync(srName, false)).AcceptModeratorInviteAsync();
-								Console.WriteLine("Accepted moderator invite to /r/{0}", srName);
-							}
-							catch (RedditHttpException ex)
-							{
-								// This is the best we can do without an update to the library
-								if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
-								{
-									try
-									{
-										await QuarantineOptInAsync(srName);
-										shouldMarkRead = false;
-									}
-									catch (Exception subException)
-									{
-										Console.WriteLine("Failed to opt in to the quarantine (if it exists): {0}", subException.Message);
-									}
-								}
-							}
-							catch (Exception ex)
-							{
-								Console.WriteLine("Failed to accept moderator invite for subreddit /r/{0}: {1}", srName, ex.Message);
-							}
-						}
-						if (shouldMarkRead)
-						{
-							try
-							{
-								await privateMessage.SetAsReadAsync();
-							}
-							catch (Exception ex)
-							{
-								Console.WriteLine("Failed to mark message {0} as read: {1}", privateMessage.FullName, ex.Message);
-							}
-						}
-					}
-					await SrCacheUpdateAsync();
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine("Failed to run accept invite loop: {0}", ex.Message);
-				}
 			}
 		}
 
@@ -183,7 +115,7 @@ namespace BotTerminator
 			}
 		}
 
-		private async Task SrCacheUpdateAsync()
+		public async Task SrCacheUpdateAsync()
 		{
 			await RedditInstance.User.GetModeratorSubreddits(-1).ForEachAsync(subreddit =>
 			{
