@@ -1,4 +1,5 @@
 ﻿using BotTerminator.Configuration;
+using BotTerminator.Modules;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RedditSharp;
@@ -15,49 +16,46 @@ namespace BotTerminator
 {
 	public class BotTerminator
 	{
-		private static readonly Regex usernameRegex = new Regex(@"https?://(?:(?:www|old|new|[A-z]{2}|alpha|beta|ssl|pay)\.)?reddit\.com//?u(?:ser)?/([\w_-]+)");
+		private static readonly Regex usernameRegex = new Regex(@"https?://(?:(?:www|old|new|[A-z]{2}|alpha|beta|ssl|pay)\.)?RedditInstance\.com//?u(?:ser)?/([\w_-]+)");
 		private static readonly String[] ignoreAuthorCssClasses = new[]
 		{
 			"btproof", "botbustproof",
 		};
 
-		private readonly IWebAgent webAgent;
-		private readonly Reddit reddit;
 		private readonly AuthenticationConfig authConfig;
 
-		internal GlobalConfig GlobalConfig { get; private set; }
-
-		private const String HideUrl = "/api/hide";
-		private const String NewModCommentsUrl = "/r/mod/comments";
-		private const String QuarantineOptInUrl = "/api/quarantine_optin";
-
-		private const Int32 PageLimit = 100;
-
-		private const String CacheFreshenerUserName = "reddit";
+		public const String CacheFreshenerUserName = "RedditInstance";
 		private const String DeletedUserName = "[deleted]";
+		public const String HideUrl = "/api/hide";
+		public const String NewModCommentsUrl = "/r/mod/comments";
+		public const Int32 PageLimit = 100;
+		public const String QuarantineOptInUrl = "/api/quarantine_optin";
 
-		private String SubredditName => authConfig.SubredditName;
+		internal GlobalConfig GlobalConfig { get; private set; }
+		internal Reddit RedditInstance { get; private set; }
+		private IReadOnlyCollection<BotModule> Modules { get; set; }
+		internal Dictionary<String, Subreddit> SubredditLookup { get; private set; } = new Dictionary<String, Subreddit>();
+		internal String SubredditName => authConfig.SubredditName;
+		private IBotDatabase UserLookup { get; set; }
+		internal IWebAgent WebAgent { get; private set; }
 
-		public BotTerminator(IWebAgent webAgent, Reddit reddit, AuthenticationConfig authConfig)
+		public BotTerminator(IWebAgent webAgent, Reddit RedditInstance, AuthenticationConfig authConfig)
 		{
-			this.webAgent = webAgent;
-			this.reddit = reddit;
+			this.WebAgent = webAgent;
+			this.RedditInstance = RedditInstance;
 			this.authConfig = authConfig;
 		}
 
-		private Dictionary<String, Subreddit> SubredditLookup { get; set; } = new Dictionary<String, Subreddit>();
-		private IBotDatabase UserLookup { get; set; }
-
 		public async Task StartAsync()
 		{
-			Wiki subredditWiki = (await reddit.GetSubredditAsync(SubredditName, false)).GetWiki;
+			Wiki subredditWiki = (await RedditInstance.GetSubredditAsync(SubredditName, false)).GetWiki;
 			try
 			{
 				const String pageName = "botConfig/botTerminator";
 				if (!(await subredditWiki.GetPageNamesAsync()).Contains(pageName.ToLower()))
 				{
 					GlobalConfig = new GlobalConfig();
-					await subredditWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(globalConfig), null, "create BotTerminator configuration");
+					await subredditWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(GlobalConfig), null, "create BotTerminator configuration");
 					await subredditWiki.SetPageSettingsAsync(pageName, true, WikiPageSettings.WikiPagePermissionLevel.Mods);
 				}
 				else
@@ -70,10 +68,14 @@ namespace BotTerminator
 				Console.WriteLine("Failed to load or create subreddit config: " + ex.Message);
 				return;
 			}
-			UserLookup = new WikiBotDatabase(await reddit.GetSubredditAsync(SubredditName, false));
+			UserLookup = new WikiBotDatabase(await RedditInstance.GetSubredditAsync(SubredditName, false));
 			await UserLookup.CheckUserAsync(CacheFreshenerUserName);
 			await SrCacheUpdateAsync();
-			await Task.WhenAll(StartCommentLoopAsync(), StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartInviteAcceptorLoopAsync(), StartMakeSureCacheFreshLoopAsync());
+			IEnumerable<Task> tasks = Modules.Select(s => s.RunForeverAsync()).Concat(new Task[]
+			{
+				StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartInviteAcceptorLoopAsync(), StartMakeSureCacheFreshLoopAsync()
+			});
+			await Task.WhenAll(tasks);
 		}
 
 		private async Task StartMakeSureCacheFreshLoopAsync()
@@ -98,7 +100,7 @@ namespace BotTerminator
 				try
 				{
 					List<PrivateMessage> privateMessages = new List<PrivateMessage>();
-					await reddit.User.GetUnreadMessages(-1).ForEachAsync(unreadMessage =>
+					await RedditInstance.User.GetUnreadMessages(-1).ForEachAsync(unreadMessage =>
 					{
 						if (unreadMessage is PrivateMessage message)
 						{
@@ -119,7 +121,7 @@ namespace BotTerminator
 							}
 							try
 							{
-								await (await reddit.GetSubredditAsync(srName, false)).AcceptModeratorInviteAsync();
+								await (await RedditInstance.GetSubredditAsync(srName, false)).AcceptModeratorInviteAsync();
 								Console.WriteLine("Accepted moderator invite to /r/{0}", srName);
 							}
 							catch (RedditHttpException ex)
@@ -183,7 +185,7 @@ namespace BotTerminator
 
 		private async Task SrCacheUpdateAsync()
 		{
-			await reddit.User.GetModeratorSubreddits(-1).ForEachAsync(subreddit =>
+			await RedditInstance.User.GetModeratorSubreddits(-1).ForEachAsync(subreddit =>
 			{
 				if (!SubredditLookup.ContainsKey(subreddit.DisplayName))
 				{
@@ -203,39 +205,7 @@ namespace BotTerminator
 			{
 				try
 				{
-					List<Comment> comments = new List<Comment>();
-					await reddit.GetListing<Comment>(NewModCommentsUrl, 250, PageLimit).ForEachAsync(comment =>
-					{
-						if (IsUnbannable(comment) || (comment.BannedBy != null || comment.BannedBy == reddit.User.Name)) return;
-						// all distinguishes are given to moderators (who can't be banned) or known humans
-						if (comment.Distinguished != ModeratableThing.DistinguishType.None) return;
-						comments.Add(comment);
-					});
-
-					foreach (Comment comment in comments)
-					{
-						if (await CheckShouldBanAsync(comment))
-						{
-							AbstractSubredditOptionSet options = GlobalConfig.GlobalOptions;
-							if (!options.Enabled)
-							{
-								continue;
-							}
-							// TODO: Magic string
-							if (options.RemovalType == Models.RemovalType.Spam)
-							{
-								await comment.RemoveSpamAsync();
-							}
-							else if (options.RemovalType == Models.RemovalType.Remove)
-							{
-								await comment.RemoveAsync();
-							}
-							if (options.BanDuration > -1)
-							{
-								await SubredditLookup[comment.Subreddit].BanUserAsync(comment.AuthorName, options.BanNote, null, options.BanDuration, options.BanMessage);
-							}
-						}
-					}
+					
 				}
 				catch (Exception ex)
 				{
@@ -253,7 +223,7 @@ namespace BotTerminator
 				try
 				{
 					List<Post> posts = new List<Post>();
-					await reddit.GetListing<Post>("/r/" + SubredditName + "/new", -1, PageLimit).ForEachAsync(post =>
+					await RedditInstance.GetListing<Post>("/r/" + SubredditName + "/new", -1, PageLimit).ForEachAsync(post =>
 					{
 						if (post?.LinkFlairText == null || (post.LinkFlairText != "Banned" && post.LinkFlairText != "Meta")) return;
 						if (post.IsHidden) return;
@@ -286,7 +256,7 @@ namespace BotTerminator
 						for (int i = 0; i < posts.Count; i+=25)
 						{
 							String formattedUrl = String.Format("{0}?id={1}", HideUrl, String.Join(",", posts.Select(s => s.FullName).Skip(i).Take(25)));
-							await webAgent.ExecuteRequestAsync(() => webAgent.CreateRequest(formattedUrl, requestVerb));
+							await WebAgent.ExecuteRequestAsync(() => WebAgent.CreateRequest(formattedUrl, requestVerb));
 						}
 					}
 				}
@@ -307,9 +277,9 @@ namespace BotTerminator
 		/// </summary>
 		/// <param name="comment">The comment to test for the ability to ban</param>
 		/// <returns>A value determining whether the user is not bannable on Reddit.</returns>
-		private Boolean IsUnbannable(Comment comment) => String.IsNullOrWhiteSpace(comment?.AuthorName) || comment?.AuthorName == DeletedUserName;
+		public static Boolean IsUnbannable(Comment comment) => String.IsNullOrWhiteSpace(comment?.AuthorName) || comment?.AuthorName == DeletedUserName;
 
-		private async Task<Boolean> CheckShouldBanAsync(Comment comment)
+		internal async Task<Boolean> CheckShouldBanAsync(Comment comment)
 		{
 			if (IsUnbannable(comment)) return false;
 			if (!String.IsNullOrWhiteSpace(comment.AuthorFlairCssClass) &&
@@ -320,11 +290,11 @@ namespace BotTerminator
 			return await UserLookup.CheckUserAsync(comment.AuthorName);
 		}
 
-		private async Task QuarantineOptInAsync(String subredditName)
+		internal async Task QuarantineOptInAsync(String subredditName)
 		{
 			const string requestVerb = "POST";
-			await webAgent.ExecuteRequestAsync(() => {
-				HttpRequestMessage request = webAgent.CreateRequest(QuarantineOptInUrl, requestVerb);
+			await WebAgent.ExecuteRequestAsync(() => {
+				HttpRequestMessage request = WebAgent.CreateRequest(QuarantineOptInUrl, requestVerb);
 				request.Content = new StringContent("sr_name=" + subredditName, Encoding.UTF8);
 				return request;
 			});
