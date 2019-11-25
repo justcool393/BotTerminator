@@ -10,6 +10,6 @@ namespace BotTerminator
 	{
 		public Task<Boolean> CheckUserAsync(String name) => Task.FromResult(false);
 
-		public Task UpdateUserAsync(String name, Boolean value) => Task.CompletedTask;
+		public Task UpdateUserAsync(String name, Boolean value, Boolean force) => Task.CompletedTask;
 	}
 }

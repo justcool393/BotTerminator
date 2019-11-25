@@ -35,13 +35,13 @@ namespace BotTerminator
 			return Cache.Items.Contains(name);
 		}
 
-		public async Task UpdateUserAsync(String name, Boolean value)
+		public async Task UpdateUserAsync(String name, Boolean value, Boolean force)
 		{
 			if (value)
 			{
 				Cache.Items.Add(name);
 			}
-			if (IsStale)
+			if (force || IsStale)
 			{
 				await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(Cache));
 				LastUpdatedAtUtc = DateTimeOffset.UtcNow;
