@@ -74,7 +74,7 @@ namespace BotTerminator.Modules
 					}
 				}
 			}
-			await bot.SrCacheUpdateAsync();
+			await bot.UpdateSubredditCacheAsync();
 		}
 
 		public override Task SetupAsync()
