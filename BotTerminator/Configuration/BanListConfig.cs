@@ -5,12 +5,9 @@ using System.Collections.Generic;
 namespace BotTerminator.Configuration
 {
 	[JsonObject]
-	public class BanListConfig
+	public class BanListConfig : BotConfig
 	{
-		[JsonProperty("configVersion")]
-		public Int64 Version { get; set; } = 1;
-
 		[JsonProperty("bannedUsers")]
-		public HashSet<String> Items { get; set; } = new HashSet<String>();
+		public ISet<String> Items { get; set; } = new HashSet<String>();
 	}
 }

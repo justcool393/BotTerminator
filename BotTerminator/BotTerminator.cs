@@ -1,4 +1,5 @@
 ﻿using BotTerminator.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RedditSharp;
 using RedditSharp.Things;
@@ -22,7 +23,8 @@ namespace BotTerminator
 
 		private readonly IWebAgent webAgent;
 		private readonly Reddit reddit;
-		private readonly AuthenticationConfig config;
+		private readonly AuthenticationConfig authConfig;
+		private GlobalConfig globalConfig;
 
 		private const String HideUrl = "/api/hide";
 		private const String NewModCommentsUrl = "/r/mod/comments";
@@ -33,13 +35,13 @@ namespace BotTerminator
 		private const String CacheFreshenerUserName = "reddit";
 		private const String DeletedUserName = "[deleted]";
 
-		private String SubredditName => config.SubredditName;
+		private String SubredditName => authConfig.SubredditName;
 
 		public BotTerminator(IWebAgent webAgent, Reddit reddit, AuthenticationConfig config)
 		{
 			this.webAgent = webAgent;
 			this.reddit = reddit;
-			this.config = config;
+			this.authConfig = config;
 		}
 
 		private Dictionary<String, Subreddit> SubredditLookup { get; set; } = new Dictionary<String, Subreddit>();
@@ -47,7 +49,28 @@ namespace BotTerminator
 
 		public async Task StartAsync()
 		{
+			Wiki subredditWiki = (await reddit.GetSubredditAsync(SubredditName, false)).GetWiki;
+			try
+			{
+				const String pageName = "botConfig/botTerminator";
+				if (!(await subredditWiki.GetPageNamesAsync()).Contains(pageName.ToLower()))
+				{
+					globalConfig = new GlobalConfig();
+					await subredditWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(globalConfig), null, "create BotTerminator configuration");
+					await subredditWiki.SetPageSettingsAsync(pageName, true, WikiPageSettings.WikiPagePermissionLevel.Mods);
+				}
+				else
+				{
+					globalConfig = JsonConvert.DeserializeObject<GlobalConfig>((await subredditWiki.GetPageAsync(pageName.ToLower())).MarkdownContent);
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Failed to load or create subreddit config: " + ex.Message);
+				return;
+			}
 			UserLookup = new WikiBotDatabase(await reddit.GetSubredditAsync(SubredditName, false));
+			await UserLookup.CheckUserAsync(CacheFreshenerUserName);
 			await SrCacheUpdateAsync();
 			await Task.WhenAll(StartCommentLoopAsync(), StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartInviteAcceptorLoopAsync(), StartMakeSureCacheFreshLoopAsync());
 		}
@@ -59,7 +82,7 @@ namespace BotTerminator
 			{
 				try
 				{
-					await UserLookup.CheckUserAsync(CacheFreshenerUserName);
+					await UserLookup.UpdateUserAsync(CacheFreshenerUserName, false);
 					await Task.Delay(new TimeSpan(0, 10, 0));
 				}
 				catch { } // we don't really care
@@ -192,9 +215,24 @@ namespace BotTerminator
 					{
 						if (await CheckShouldBanAsync(comment))
 						{
+							AbstractSubredditOptionSet options = globalConfig.GlobalOptions;
+							if (!options.Enabled)
+							{
+								continue;
+							}
 							// TODO: Magic string
-							await Task.WhenAll(comment.RemoveSpamAsync(),
-							                   SubredditLookup[comment.Subreddit].BanUserAsync(comment.AuthorName, "spam", "botterminator banned", 0, String.Empty));
+							if (options.RemovalType == Models.RemovalType.Spam)
+							{
+								await comment.RemoveSpamAsync();
+							}
+							else if (options.RemovalType == Models.RemovalType.Remove)
+							{
+								await comment.RemoveAsync();
+							}
+							if (options.BanDuration > -1)
+							{
+								await SubredditLookup[comment.Subreddit].BanUserAsync(comment.AuthorName, options.BanNote, null, options.BanDuration, options.BanMessage);
+							}
 						}
 					}
 				}
@@ -209,7 +247,6 @@ namespace BotTerminator
 		public async Task StartNewBanUpdateLoopAsync()
 		{
 			Console.WriteLine("Starting config updater loop");
-			await UserLookup.CheckUserAsync(CacheFreshenerUserName);
 			while (true)
 			{
 				try
