@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace BotTerminator.Modules
 {
-	public class CommentModule : BotModule
+	public class CommentScannerModule : BotModule
 	{
-		public CommentModule(BotTerminator bot) : base(bot)
+		public CommentScannerModule(BotTerminator bot) : base(bot)
 		{
 		}
 
@@ -34,7 +34,6 @@ namespace BotTerminator.Modules
 					{
 						continue;
 					}
-					// TODO: Magic string
 					if (options.RemovalType == Models.RemovalType.Spam)
 					{
 						await comment.RemoveSpamAsync();
