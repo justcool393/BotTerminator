@@ -36,7 +36,7 @@ namespace BotTerminator
 		private IReadOnlyCollection<BotModule> Modules { get; set; }
 		internal Dictionary<String, Subreddit> SubredditLookup { get; private set; } = new Dictionary<String, Subreddit>();
 		internal String SubredditName => authConfig.SubredditName;
-		private IBotDatabase UserLookup { get; set; }
+		public IBotDatabase UserLookup { get; private set; }
 		internal IWebAgent WebAgent { get; private set; }
 
 		public BotTerminator(IWebAgent webAgent, Reddit RedditInstance, AuthenticationConfig authConfig)
@@ -70,52 +70,22 @@ namespace BotTerminator
 			}
 			UserLookup = new WikiBotDatabase(await RedditInstance.GetSubredditAsync(SubredditName, false));
 			await UserLookup.CheckUserAsync(CacheFreshenerUserName);
-			await SrCacheUpdateAsync();
+			await UpdateSubredditCacheAsync();
 
 			Modules = new List<BotModule>()
 			{
 				new CommentScannerModule(this), new InviteAcceptorModule(this),
+				new CacheFreshenerModule(this),
 			};
 
 			IEnumerable<Task> tasks = Modules.Select(s => s.RunForeverAsync()).Concat(new Task[]
 			{
-				StartNewBanUpdateLoopAsync(), StartSrCacheUpdateLoopAsync(), StartMakeSureCacheFreshLoopAsync()
+				StartNewBanUpdateLoopAsync(),
 			});
 			await Task.WhenAll(tasks);
 		}
 
-		private async Task StartMakeSureCacheFreshLoopAsync()
-		{
-			Console.WriteLine("Starting cache freshener loop");
-			while (true)
-			{
-				try
-				{
-					await UserLookup.UpdateUserAsync(CacheFreshenerUserName, false);
-					await Task.Delay(new TimeSpan(0, 10, 0));
-				}
-				catch { } // we don't really care
-			}
-		}
-
-		private async Task StartSrCacheUpdateLoopAsync()
-		{
-			Console.WriteLine("Starting subreddit cache update loop");
-			while (true)
-			{
-				try
-				{
-					await Task.Delay(new TimeSpan(0, 10, 0));
-					await SrCacheUpdateAsync();
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex.ToString());
-				}
-			}
-		}
-
-		public async Task SrCacheUpdateAsync()
+		public async Task UpdateSubredditCacheAsync()
 		{
 			await RedditInstance.User.GetModeratorSubreddits(-1).ForEachAsync(subreddit =>
 			{
