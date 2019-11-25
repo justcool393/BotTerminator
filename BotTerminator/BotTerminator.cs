@@ -24,7 +24,8 @@ namespace BotTerminator
 		private readonly IWebAgent webAgent;
 		private readonly Reddit reddit;
 		private readonly AuthenticationConfig authConfig;
-		private GlobalConfig globalConfig;
+
+		internal GlobalConfig GlobalConfig { get; private set; }
 
 		private const String HideUrl = "/api/hide";
 		private const String NewModCommentsUrl = "/r/mod/comments";
@@ -37,11 +38,11 @@ namespace BotTerminator
 
 		private String SubredditName => authConfig.SubredditName;
 
-		public BotTerminator(IWebAgent webAgent, Reddit reddit, AuthenticationConfig config)
+		public BotTerminator(IWebAgent webAgent, Reddit reddit, AuthenticationConfig authConfig)
 		{
 			this.webAgent = webAgent;
 			this.reddit = reddit;
-			this.authConfig = config;
+			this.authConfig = authConfig;
 		}
 
 		private Dictionary<String, Subreddit> SubredditLookup { get; set; } = new Dictionary<String, Subreddit>();
@@ -55,13 +56,13 @@ namespace BotTerminator
 				const String pageName = "botConfig/botTerminator";
 				if (!(await subredditWiki.GetPageNamesAsync()).Contains(pageName.ToLower()))
 				{
-					globalConfig = new GlobalConfig();
+					GlobalConfig = new GlobalConfig();
 					await subredditWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(globalConfig), null, "create BotTerminator configuration");
 					await subredditWiki.SetPageSettingsAsync(pageName, true, WikiPageSettings.WikiPagePermissionLevel.Mods);
 				}
 				else
 				{
-					globalConfig = JsonConvert.DeserializeObject<GlobalConfig>((await subredditWiki.GetPageAsync(pageName.ToLower())).MarkdownContent);
+					GlobalConfig = JsonConvert.DeserializeObject<GlobalConfig>((await subredditWiki.GetPageAsync(pageName.ToLower())).MarkdownContent);
 				}
 			}
 			catch (Exception ex)
@@ -215,7 +216,7 @@ namespace BotTerminator
 					{
 						if (await CheckShouldBanAsync(comment))
 						{
-							AbstractSubredditOptionSet options = globalConfig.GlobalOptions;
+							AbstractSubredditOptionSet options = GlobalConfig.GlobalOptions;
 							if (!options.Enabled)
 							{
 								continue;

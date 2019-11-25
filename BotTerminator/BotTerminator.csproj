@@ -259,6 +259,8 @@
     <Compile Include="IBotDatabase.cs" />
     <Compile Include="MemoryBotDatabase.cs" />
     <Compile Include="Models\GlobalBan.cs" />
+    <Compile Include="Modules\BotModule.cs" />
+    <Compile Include="Modules\CommentModule.cs" />
     <Compile Include="NullBotDatabase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
