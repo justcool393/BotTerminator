@@ -217,7 +217,7 @@ namespace BotTerminator
 					List<Post> posts = new List<Post>();
 					await reddit.GetListing<Post>("/r/" + SubredditName + "/new", -1, PageLimit).ForEachAsync(post =>
 					{
-						if (post.LinkFlairText != "Banned" && post.LinkFlairText != "Meta") return;
+						if (post?.LinkFlairText == null || (post.LinkFlairText != "Banned" && post.LinkFlairText != "Meta")) return;
 						if (post.IsHidden) return;
 						posts.Add(post);
 					});
