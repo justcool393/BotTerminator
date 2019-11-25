@@ -10,6 +10,9 @@ namespace BotTerminator.Configuration
 {
 	public abstract class AbstractSubredditOptionSet
 	{
+		[JsonProperty("enabled")]
+		public abstract bool Enabled { get; set; }
+
 		[JsonProperty("banNote")]
 		public abstract String BanNote { get; set; }
 

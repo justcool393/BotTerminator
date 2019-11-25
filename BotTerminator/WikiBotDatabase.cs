@@ -37,7 +37,10 @@ namespace BotTerminator
 
 		public async Task UpdateUserAsync(String name, Boolean value)
 		{
-			Cache.Items.Add(name);
+			if (value)
+			{
+				Cache.Items.Add(name);
+			}
 			if (IsStale)
 			{
 				await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(Cache));

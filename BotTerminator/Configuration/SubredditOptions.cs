@@ -10,6 +10,7 @@ namespace BotTerminator.Configuration
 {
 	public class SubredditOptions : AbstractSubredditOptionSet
 	{
+		public override Boolean Enabled { get; set; } = true;
 		public override String BanNote { get; set; }
 
 		public override String BanMessage { get; set; }

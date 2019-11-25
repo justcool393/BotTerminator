@@ -20,6 +20,16 @@ namespace BotTerminator.Configuration
 			this.enumerablesAdditive = enumerablesAdditive;
 		}
 
+
+		public override Boolean Enabled
+		{
+			get
+			{
+				return optionSets.First().Enabled;
+			}
+			set => throw new NotSupportedException(operationNotSupportedMessage);
+		}
+
 		public override String BanNote
 		{
 			get
