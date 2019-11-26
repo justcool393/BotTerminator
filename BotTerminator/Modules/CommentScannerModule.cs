@@ -1,4 +1,5 @@
 ﻿using BotTerminator.Configuration;
+using Newtonsoft.Json.Linq;
 using RedditSharp;
 using RedditSharp.Things;
 using System;
@@ -28,7 +29,10 @@ namespace BotTerminator.Modules
 
 		protected override Boolean PreRunItem(Comment comment)
 		{
-			if (BotTerminator.IsUnbannable(comment) || (comment.BannedBy != null || comment.BannedBy == RedditInstance.User.Name)) return false;
+			if (BotTerminator.IsUnbannable(comment) || 
+			    comment.BannedBy != null || comment.BannedBy == RedditInstance.User.Name ||
+			    (!GlobalConfig.AllowNsfw && comment["over_18"].Value<bool?>().GetValueOrDefault(false)) ||
+				(!GlobalConfig.AllowQuarantined && comment["quarantine"].Value<bool?>().GetValueOrDefault(false))) return false;
 			// all distinguishes are given to moderators (who can't be banned) or known humans
 			return comment.Distinguished == ModeratableThing.DistinguishType.None;
 		}
