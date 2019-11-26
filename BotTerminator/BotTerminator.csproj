@@ -254,10 +254,13 @@
     <Compile Include="Configuration\AbstractSubredditOptionSet.cs" />
     <Compile Include="Configuration\ShadedOptionSet.cs" />
     <Compile Include="Configuration\SubredditOptions.cs" />
+    <Compile Include="Data\IBotDatabase.cs" />
+    <Compile Include="Data\MemoryBotDatabase.cs" />
+    <Compile Include="Data\NullBotDatabase.cs" />
+    <Compile Include="Data\SQLiteBotDatabase.cs" />
+    <Compile Include="Data\WikiBotDatabase.cs" />
     <Compile Include="Exceptions\BotTerminatorException.cs" />
     <Compile Include="Exceptions\UnsupportedConfigVersionException.cs" />
-    <Compile Include="IBotDatabase.cs" />
-    <Compile Include="MemoryBotDatabase.cs" />
     <Compile Include="Models\GlobalBan.cs" />
     <Compile Include="Modules\BotModule.cs" />
     <Compile Include="Modules\CacheFreshenerModule.cs" />
@@ -265,12 +268,9 @@
     <Compile Include="Modules\InviteAcceptorModule.cs" />
     <Compile Include="Modules\ListingBotModule.cs" />
     <Compile Include="Modules\UpdateBanListModule.cs" />
-    <Compile Include="NullBotDatabase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemovalType.cs" />
-    <Compile Include="SQLiteBotDatabase.cs" />
-    <Compile Include="WikiBotDatabase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
