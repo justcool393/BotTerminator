@@ -8,46 +8,10 @@ using System.Threading.Tasks;
 
 namespace BotTerminator.Modules
 {
-	public class CommentScannerModule : BotModule
+	public class CommentScannerModule : ListingBotModule<Comment>
 	{
-		public CommentScannerModule(BotTerminator bot) : base(bot)
+		public CommentScannerModule(BotTerminator bot) : base(bot, bot.RedditInstance.GetListing<Comment>(BotTerminator.NewModCommentsUrl, 250, BotTerminator.PageLimit))
 		{
-		}
-
-		public override async Task RunOnceAsync()
-		{
-			List<Comment> comments = new List<Comment>();
-			await RedditInstance.GetListing<Comment>(BotTerminator.NewModCommentsUrl, 250, BotTerminator.PageLimit).ForEachAsync(comment =>
-			{
-				if (BotTerminator.IsUnbannable(comment) || (comment.BannedBy != null || comment.BannedBy == RedditInstance.User.Name)) return;
-				// all distinguishes are given to moderators (who can't be banned) or known humans
-				if (comment.Distinguished != ModeratableThing.DistinguishType.None) return;
-				comments.Add(comment);
-			});
-
-			foreach (Comment comment in comments)
-			{
-				if (await bot.CheckShouldBanAsync(comment))
-				{
-					AbstractSubredditOptionSet options = GlobalConfig.GlobalOptions;
-					if (!options.Enabled)
-					{
-						continue;
-					}
-					if (options.RemovalType == Models.RemovalType.Spam)
-					{
-						await comment.RemoveSpamAsync();
-					}
-					else if (options.RemovalType == Models.RemovalType.Remove)
-					{
-						await comment.RemoveAsync();
-					}
-					if (options.BanDuration > -1)
-					{
-						await bot.SubredditLookup[comment.Subreddit].BanUserAsync(comment.AuthorName, options.BanNote, null, options.BanDuration, options.BanMessage);
-					}
-				}
-			}
 		}
 
 		public override Task SetupAsync()
@@ -57,5 +21,35 @@ namespace BotTerminator.Modules
 		}
 
 		public override Task TeardownAsync() => Task.CompletedTask;
+
+		protected override Task PostRunItemsAsync(ICollection<Comment> things) => Task.CompletedTask;
+
+		protected override Boolean PreRunItem(Comment comment)
+		{
+			if (BotTerminator.IsUnbannable(comment) || (comment.BannedBy != null || comment.BannedBy == RedditInstance.User.Name)) return false;
+			// all distinguishes are given to moderators (who can't be banned) or known humans
+			return comment.Distinguished == ModeratableThing.DistinguishType.None;
+		}
+
+		protected override async Task RunItemAsync(Comment comment)
+		{
+			if (await bot.CheckShouldBanAsync(comment))
+			{
+				AbstractSubredditOptionSet options = GlobalConfig.GlobalOptions;
+				if (!options.Enabled) return;
+				if (options.RemovalType == Models.RemovalType.Spam)
+				{
+					await comment.RemoveSpamAsync();
+				}
+				else if (options.RemovalType == Models.RemovalType.Remove)
+				{
+					await comment.RemoveAsync();
+				}
+				if (options.BanDuration > -1)
+				{
+					await bot.SubredditLookup[comment.Subreddit].BanUserAsync(comment.AuthorName, options.BanNote, null, options.BanDuration, options.BanMessage);
+				}
+			}
+		}
 	}
 }
