@@ -263,6 +263,7 @@
     <Compile Include="Modules\CacheFreshenerModule.cs" />
     <Compile Include="Modules\CommentScannerModule.cs" />
     <Compile Include="Modules\InviteAcceptorModule.cs" />
+    <Compile Include="Modules\ListingBotModule.cs" />
     <Compile Include="Modules\UpdateBanListModule.cs" />
     <Compile Include="NullBotDatabase.cs" />
     <Compile Include="Program.cs" />
