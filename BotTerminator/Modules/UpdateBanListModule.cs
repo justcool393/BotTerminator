@@ -11,7 +11,9 @@ namespace BotTerminator.Modules
 {
 	public class UpdateBanListModule : ListingBotModule<Post>
 	{
-		private static readonly Regex usernameRegex = new Regex(@"https?://(?:(?:www|old|new|[A-z]{2}|alpha|beta|ssl|pay)\.)?RedditInstance\.com//?u(?:ser)?/([\w_-]+)");
+		private static readonly Regex usernameRegex = new Regex(@"https?://(?:(?:www|old|new|[A-z]{2}|alpha|beta|ssl|pay)\.)?(?:c|r(?:emoveddit)?)eddit\.com//?u(?:ser)?/([\w_-]+)");
+
+		private static bool first = true;
 
 		public UpdateBanListModule(BotTerminator bot) : base(bot, bot.RedditInstance.GetListing<Post>("/r/" + bot.SubredditName + "/new", -1, BotTerminator.PageLimit))
 		{
@@ -62,7 +64,8 @@ namespace BotTerminator.Modules
 			if (match == null || match.Groups.Count != 2) return;
 			Console.WriteLine("Found new bot to ban " + match.Groups[1].Value);
 			String targetUserName = match.Groups[1].Value;
-			await bot.UserLookup.UpdateUserAsync(targetUserName, true);
+			await bot.UserLookup.UpdateUserAsync(targetUserName, true, first);
+			first = false;
 		}
 	}
 }
