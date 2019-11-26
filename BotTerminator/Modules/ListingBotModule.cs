@@ -11,8 +11,8 @@ namespace BotTerminator.Modules
 	public abstract class ListingBotModule<T> : BotModule where T : Thing
 	{
 		protected Listing<T> Listing { get; }
-		protected bool RequireUnique { get; }
-		protected bool RequireInOrder { get; }
+		protected bool RequireUnique { get; set; }
+		protected bool RequireInOrder { get; set; }
 
 		public ListingBotModule(BotTerminator bot, Listing<T> listing) : base(bot)
 		{
@@ -22,15 +22,17 @@ namespace BotTerminator.Modules
 		protected abstract bool PreRunItem(T thing);
 		protected abstract Task RunItemAsync(T thing);
 
-		public override async Task RunOnceAsync()
+		protected abstract Task PostRunItemsAsync(ICollection<T> things);
+
+		public override sealed async Task RunOnceAsync()
 		{
 			HashSet<String> fullnames = new HashSet<String>();
-			List<T> things = new List<T>();
+			ICollection<T> things = new List<T>();
 
 			await Listing.ForEachAsync(thing =>
 			{
 				if (RequireUnique && fullnames.Contains(thing.FullName)) return;
-				if (PreRunItem(thing))
+				if (thing != null && PreRunItem(thing))
 				{
 					fullnames.Add(thing.FullName);
 					things.Add(thing);
@@ -47,6 +49,7 @@ namespace BotTerminator.Modules
 			{
 				await Task.WhenAll(things.Select(thing => RunItemAsync(thing)));
 			}
+			await PostRunItemsAsync(things);
 		}
 	}
 }
