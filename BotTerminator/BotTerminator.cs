@@ -24,7 +24,7 @@ namespace BotTerminator
 
 		private readonly AuthenticationConfig authConfig;
 
-		public const String CacheFreshenerUserName = "RedditInstance";
+		public const String CacheFreshenerUserName = "reddit";
 		private const String DeletedUserName = "[deleted]";
 		public const String HideUrl = "/api/hide";
 		public const String NewModCommentsUrl = "/r/mod/comments";
