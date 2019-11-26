@@ -6,7 +6,16 @@ using System.Threading.Tasks;
 
 namespace BotTerminator.Data
 {
-	class SQLiteBotDatabase
+	public class SQLiteBotDatabase : IBotDatabase
 	{
+		public Task<Boolean> CheckUserAsync(String name)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task UpdateUserAsync(String name, Boolean value, Boolean force = false)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
