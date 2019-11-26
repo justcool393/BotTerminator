@@ -31,15 +31,15 @@ namespace BotTerminator.Modules
 			await Task.Delay(new TimeSpan(0, 0, 30));
 		}
 
-		protected override Boolean PreRunItem(Thing thing)
+		protected override Boolean PreRunItem(Thing message)
 		{
-			return thing is PrivateMessage privateMessage && privateMessage.Subreddit != null && privateMessage.FirstMessageName == null;
+			return message is PrivateMessage privateMessage && privateMessage.Subreddit != null && privateMessage.FirstMessageName == null;
 		}
 
-		protected override async Task RunItemAsync(Thing thing)
+		protected override async Task RunItemAsync(Thing messageAsThing)
 		{
 			const String modInviteMsg = "invitation to moderate /r/";
-			PrivateMessage privateMessage = (PrivateMessage)thing;
+			PrivateMessage privateMessage = (PrivateMessage)messageAsThing;
 			bool shouldMarkRead = true;
 
 			if (privateMessage.Subject.StartsWith(modInviteMsg) && privateMessage.Subject.Length > modInviteMsg.Length)
