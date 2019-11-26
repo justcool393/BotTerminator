@@ -15,7 +15,7 @@ namespace BotTerminator.Modules
 		protected GlobalConfig GlobalConfig => bot.GlobalConfig;
 		protected Reddit RedditInstance => bot.RedditInstance;
 
-		public BotModule(BotTerminator bot)
+		protected BotModule(BotTerminator bot)
 		{
 			this.bot = bot;
 		}

@@ -14,7 +14,7 @@ namespace BotTerminator.Modules
 		protected bool RequireUnique { get; set; }
 		protected bool RequireInOrder { get; set; }
 
-		public ListingBotModule(BotTerminator bot, Listing<T> listing) : base(bot)
+		protected ListingBotModule(BotTerminator bot, Listing<T> listing) : base(bot)
 		{
 			Listing = listing;
 		}
