@@ -31,36 +31,36 @@ namespace BotTerminator.Modules
 			await bot.UserLookup.UpdateUserAsync(BotTerminator.CacheFreshenerUserName, false, true);
 		}
 
-		protected override async Task PostRunItemsAsync(ICollection<Post> things)
+		protected override async Task PostRunItemsAsync(ICollection<Post> subredditPosts)
 		{
 			// hide all of them at once
-			if (things.Count > 0)
+			if (subredditPosts.Count > 0)
 			{
 				const String requestVerb = "POST";
-				for (int i = 0; i < things.Count; i += 25)
+				for (int i = 0; i < subredditPosts.Count; i += 25)
 				{
-					String formattedUrl = String.Format("{0}?id={1}", BotTerminator.HideUrl, String.Join(",", things.Select(s => s.FullName).Skip(i).Take(25)));
+					String formattedUrl = String.Format("{0}?id={1}", BotTerminator.HideUrl, String.Join(",", subredditPosts.Select(s => s.FullName).Skip(i).Take(25)));
 					await bot.WebAgent.ExecuteRequestAsync(() => bot.WebAgent.CreateRequest(formattedUrl, requestVerb));
 				}
 			}
 		}
 
-		protected override Boolean PreRunItem(Post thing)
+		protected override Boolean PreRunItem(Post subredditPost)
 		{
-			return !thing.IsHidden && thing.LinkFlairText != null && (thing.LinkFlairText == "Banned" || thing.LinkFlairText == "Meta");
+			return !subredditPost.IsHidden && subredditPost.LinkFlairText != null && (subredditPost.LinkFlairText == "Banned" || subredditPost.LinkFlairText == "Meta");
 		}
 
-		protected override async Task RunItemAsync(Post thing)
+		protected override async Task RunItemAsync(Post subredditPost)
 		{
 			// We don't need to even look at meta posts
-			if (thing.LinkFlairText == "Meta") return;
+			if (subredditPost.LinkFlairText == "Meta") return;
 
 			/* 
 			 * We don't use the post.Url property here because if the Url is not a
 			 * well formed URI, RedditSharp throws an UriFormatException. The cases
 			 * where this is a problem is exceedingly rare, but it is possible.
 			 */
-			Match match = usernameRegex.Match(thing["url"].Value<String>().Trim());
+			Match match = usernameRegex.Match(subredditPost["url"].Value<String>().Trim());
 			if (match == null || match.Groups.Count != 2) return;
 			Console.WriteLine("Found new bot to ban " + match.Groups[1].Value);
 			String targetUserName = match.Groups[1].Value;
