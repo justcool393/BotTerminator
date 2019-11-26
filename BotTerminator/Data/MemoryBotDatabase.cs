@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BotTerminator
+namespace BotTerminator.Data
 {
 	public class MemoryBotDatabase : IBotDatabase
 	{

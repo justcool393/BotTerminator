@@ -1,4 +1,5 @@
 ﻿using BotTerminator.Configuration;
+using BotTerminator.Data;
 using BotTerminator.Modules;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

@@ -5,7 +5,7 @@ using RedditSharp.Things;
 using System;
 using System.Threading.Tasks;
 
-namespace BotTerminator
+namespace BotTerminator.Data
 {
 	public class WikiBotDatabase : IBotDatabase
 	{
