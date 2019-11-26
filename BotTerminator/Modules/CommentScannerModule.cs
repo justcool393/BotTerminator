@@ -13,6 +13,7 @@ namespace BotTerminator.Modules
 	{
 		public CommentScannerModule(BotTerminator bot) : base(bot, bot.RedditInstance.GetListing<Comment>(BotTerminator.NewModCommentsUrl, 250, BotTerminator.PageLimit))
 		{
+			RunForeverCooldown = new TimeSpan(0, 0, 0);
 		}
 
 		public override Task SetupAsync()

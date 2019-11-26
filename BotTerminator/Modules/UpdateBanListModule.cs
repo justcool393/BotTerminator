@@ -43,7 +43,6 @@ namespace BotTerminator.Modules
 					await bot.WebAgent.ExecuteRequestAsync(() => bot.WebAgent.CreateRequest(formattedUrl, requestVerb));
 				}
 			}
-			await Task.Delay(new TimeSpan(0, 0, 30));
 		}
 
 		protected override Boolean PreRunItem(Post thing)
