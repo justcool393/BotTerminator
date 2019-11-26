@@ -1,4 +1,5 @@
 ﻿using BotTerminator.Configuration;
+using RedditSharp;
 using RedditSharp.Things;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,14 @@ namespace BotTerminator.Modules
 				if (!options.Enabled) return;
 				if (options.RemovalType == Models.RemovalType.Spam)
 				{
-					await comment.RemoveSpamAsync();
+					try
+					{
+						await comment.RemoveSpamAsync();
+					}
+					catch (RedditHttpException ex)
+					{
+						Console.WriteLine("Could not remove comment {0} due to HTTP error from reddit: {1}", comment.FullName, ex.Message);
+					}
 				}
 				else if (options.RemovalType == Models.RemovalType.Remove)
 				{
