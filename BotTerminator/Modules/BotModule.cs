@@ -14,6 +14,7 @@ namespace BotTerminator.Modules
 
 		protected GlobalConfig GlobalConfig => bot.GlobalConfig;
 		protected Reddit RedditInstance => bot.RedditInstance;
+		protected TimeSpan RunForeverCooldown { get; set; } = new TimeSpan(0, 0, 30);
 
 		protected BotModule(BotTerminator bot)
 		{
@@ -33,6 +34,10 @@ namespace BotTerminator.Modules
 				{
 					Console.WriteLine("Module {0} failed to run due to {1}: {2}", GetType().Name, ex.GetType().Name, ex.Message);
 					Console.WriteLine(ex.ToString());
+				}
+				if (RunForeverCooldown.Ticks > 0)
+				{
+					await Task.Delay(RunForeverCooldown);
 				}
 			}
 			await TeardownAsync();

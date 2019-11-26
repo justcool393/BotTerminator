@@ -10,13 +10,13 @@ namespace BotTerminator.Modules
 	{
 		public CacheFreshenerModule(BotTerminator bot) : base(bot)
 		{
+			RunForeverCooldown = new TimeSpan(0, 10, 0);
 		}
 
 		public override async Task RunOnceAsync()
 		{
 			await bot.UserLookup.UpdateUserAsync(BotTerminator.CacheFreshenerUserName, false);
 			await bot.UpdateSubredditCacheAsync();
-			await Task.Delay(new TimeSpan(0, 10, 0));
 		}
 
 		public override Task SetupAsync()
