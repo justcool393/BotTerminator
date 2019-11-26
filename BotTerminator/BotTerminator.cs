@@ -29,7 +29,7 @@ namespace BotTerminator
 		public const String HideUrl = "/api/hide";
 		public const String NewModCommentsUrl = "/r/mod/comments";
 		public const Int32 PageLimit = 100;
-		public const String QuarantineOptInUrl = "/api/quarantine_optin";
+		public const String QuarantineOptInUrl = "/api/quarantine";
 
 		internal GlobalConfig GlobalConfig { get; private set; }
 		internal Reddit RedditInstance { get; private set; }
