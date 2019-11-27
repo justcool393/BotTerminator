@@ -1,4 +1,5 @@
 ﻿using BotTerminator.Configuration;
+using BotTerminator.Models;
 using Newtonsoft.Json.Linq;
 using RedditSharp;
 using RedditSharp.Things;
@@ -43,20 +44,20 @@ namespace BotTerminator.Modules
 			{
 				AbstractSubredditOptionSet options = GlobalConfig.GlobalOptions;
 				if (!options.Enabled) return;
-				if (options.RemovalType == Models.RemovalType.Spam)
+				try
 				{
-					try
+					if (options.RemovalType == RemovalType.Spam)
 					{
 						await comment.RemoveSpamAsync();
 					}
-					catch (RedditHttpException ex)
+					else
 					{
-						Console.WriteLine("Could not remove comment {0} due to HTTP error from reddit: {1}", comment.FullName, ex.Message);
+						await comment.RemoveAsync();
 					}
 				}
-				else if (options.RemovalType == Models.RemovalType.Remove)
+				catch (RedditHttpException ex)
 				{
-					await comment.RemoveAsync();
+					Console.WriteLine("Could not remove comment {0} due to HTTP error from reddit: {1}", comment.FullName, ex.Message);
 				}
 				if (options.BanDuration > -1)
 				{
