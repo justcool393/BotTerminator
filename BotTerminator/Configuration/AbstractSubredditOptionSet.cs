@@ -13,6 +13,12 @@ namespace BotTerminator.Configuration
 		[JsonProperty("enabled")]
 		public abstract bool Enabled { get; set; }
 
+		[JsonProperty("scanPosts")]
+		public abstract bool ScanPosts { get; set; }
+
+		[JsonProperty("scanComments")]
+		public abstract bool ScanComments { get; set; }
+
 		[JsonProperty("banNote")]
 		public abstract String BanNote { get; set; }
 

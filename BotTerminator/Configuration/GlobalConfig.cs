@@ -20,7 +20,7 @@ namespace BotTerminator.Configuration
 		public List<GlobalBan> GlobalBanList { get; set; } = new List<GlobalBan>();
 
 		[JsonProperty("globalOptions", Required = Required.Always)]
-		public SubredditOptions GlobalOptions { get; set; }
+		public SubredditOptionSet GlobalOptions { get; set; }
 
 		[JsonProperty("globalIgnoreList")]
 		public IReadOnlyList<String> GlobalIgnoreList { get; set; } = new List<String>(2)
