@@ -30,6 +30,24 @@ namespace BotTerminator.Configuration
 			set => throw new NotSupportedException(operationNotSupportedMessage);
 		}
 
+		public override Boolean ScanPosts
+		{
+			get
+			{
+				return optionSets.First().ScanPosts;
+			}
+			set => throw new NotSupportedException(operationNotSupportedMessage);
+		}
+
+		public override Boolean ScanComments
+		{
+			get
+			{
+				return optionSets.First().ScanPosts;
+			}
+			set => throw new NotSupportedException(operationNotSupportedMessage);
+		}
+
 		public override String BanNote
 		{
 			get

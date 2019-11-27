@@ -8,9 +8,14 @@ using System.Threading.Tasks;
 
 namespace BotTerminator.Configuration
 {
-	public class SubredditOptions : AbstractSubredditOptionSet
+	public class SubredditOptionSet : AbstractSubredditOptionSet
 	{
 		public override Boolean Enabled { get; set; } = true;
+
+		public override Boolean ScanPosts { get; set; } = true;
+
+		public override Boolean ScanComments { get; set; } = true;
+
 		public override String BanNote { get; set; }
 
 		public override String BanMessage { get; set; }

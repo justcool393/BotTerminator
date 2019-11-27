@@ -253,7 +253,7 @@
     <Compile Include="Configuration\GlobalConfig.cs" />
     <Compile Include="Configuration\AbstractSubredditOptionSet.cs" />
     <Compile Include="Configuration\ShadedOptionSet.cs" />
-    <Compile Include="Configuration\SubredditOptions.cs" />
+    <Compile Include="Configuration\SubredditOptionSet.cs" />
     <Compile Include="Data\IBotDatabase.cs" />
     <Compile Include="Data\MemoryBotDatabase.cs" />
     <Compile Include="Data\NullBotDatabase.cs" />
