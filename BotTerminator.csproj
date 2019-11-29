@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RedditSharp" Version="2.0.0-CI00075" />
+    <PackageReference Include="RedditSharp" Version="2.0.0-CI00076" />
   </ItemGroup>
 
 </Project>
