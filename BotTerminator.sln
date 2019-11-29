@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29409.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotTerminator", "BotTerminator.csproj", "{BD2D7A3F-A882-4DCE-92DA-4B13D8099E22}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BD2D7A3F-A882-4DCE-92DA-4B13D8099E22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD2D7A3F-A882-4DCE-92DA-4B13D8099E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD2D7A3F-A882-4DCE-92DA-4B13D8099E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD2D7A3F-A882-4DCE-92DA-4B13D8099E22}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4219650C-AA84-43CB-BBC2-9CF810E529B2}
+	EndGlobalSection
+EndGlobal

@@ -234,3 +234,5 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+/.vs/BotTerminator/v16/Server/sqlite3
+/.vs/BotTerminator/DesignTimeBuild
