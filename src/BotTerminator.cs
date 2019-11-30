@@ -28,6 +28,7 @@ namespace BotTerminator
 		private const String DeletedUserName = "[deleted]";
 		public const String HideUrl = "/api/hide";
 		public const String NewModCommentsUrl = "/r/mod/comments";
+		public const String NewModUrl = "/r/mod/new";
 		public const Int32 PageLimit = 100;
 		public const String QuarantineOptInUrl = "/api/quarantine";
 
@@ -97,23 +98,28 @@ namespace BotTerminator
 
 		/// <summary>
 		/// Checks whether this user is ineligible to be banned. The only case where
-		/// this currently returns <see langword="true" /> is when the <paramref name="comment"/>
+		/// this currently returns <see langword="true" /> is when the <paramref name="thing"/>
 		/// or its <see cref="ModeratableThing.AuthorName"/> is <see langword="null"/>, whitespace,
 		/// or equal to <see cref="DeletedUserName"/>.
 		/// </summary>
-		/// <param name="comment">The comment to test for the ability to ban</param>
+		/// <param name="thing">The comment to test for the ability to ban</param>
 		/// <returns>A value determining whether the user is not bannable on Reddit.</returns>
-		public static Boolean IsUnbannable(Comment comment) => String.IsNullOrWhiteSpace(comment?.AuthorName) || comment?.AuthorName == DeletedUserName;
+		public static Boolean IsUnbannable(ModeratableThing thing) => String.IsNullOrWhiteSpace(thing?.AuthorName) || thing?.AuthorName == DeletedUserName;
 
-		internal async Task<Boolean> CheckShouldBanAsync(Comment comment)
+		internal async Task<Boolean> CheckShouldBanAsync(ModeratableThing thing)
 		{
-			if (IsUnbannable(comment)) return false;
-			if (!String.IsNullOrWhiteSpace(comment.AuthorFlairCssClass) &&
-				ignoreAuthorCssClasses.Any(cssClass => comment.AuthorFlairCssClass.Contains(cssClass)))
+			if (IsUnbannable(thing)) return false;
+
+			// flair bypass only applies to authors that can have flair
+			if (thing is VotableThing votableThing)
 			{
-				return false;
+				if (!String.IsNullOrWhiteSpace(votableThing.AuthorFlairCssClass) &&
+					ignoreAuthorCssClasses.Any(cssClass => votableThing.AuthorFlairCssClass.Contains(cssClass)))
+				{
+					return false;
+				}
 			}
-			return await UserLookup.CheckUserAsync(comment.AuthorName);
+			return await UserLookup.CheckUserAsync(thing.AuthorName);
 		}
 
 		internal async Task QuarantineOptInAsync(String subredditName)
