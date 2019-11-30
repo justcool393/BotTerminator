@@ -44,7 +44,13 @@ namespace BotTerminator
 		{
 			this.WebAgent = webAgent;
 			this.RedditInstance = RedditInstance;
-			this.authConfig = authConfig;
+			this.authConfig = authConfig; 
+			this.Modules = new List<BotModule>()
+			{
+				new CommentScannerModule(this), new PostScannerModule(this),
+				new InviteAcceptorModule(this), new CacheFreshenerModule(this),
+				new UpdateBanListModule(this),
+			};
 		}
 
 		public async Task StartAsync()
@@ -73,11 +79,6 @@ namespace BotTerminator
 			await UserLookup.CheckUserAsync(CacheFreshenerUserName);
 			await UpdateSubredditCacheAsync();
 
-			Modules = new List<BotModule>()
-			{
-				new CommentScannerModule(this), new InviteAcceptorModule(this),
-				new CacheFreshenerModule(this), new UpdateBanListModule(this),
-			};
 			await Task.WhenAll(Modules.Select(s => s.RunForeverAsync()));
 		}
 
