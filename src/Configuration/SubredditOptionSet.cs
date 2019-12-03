@@ -10,6 +10,24 @@ namespace BotTerminator.Configuration
 {
 	public class SubredditOptionSet : AbstractSubredditOptionSet
 	{
+		public SubredditOptionSet()
+		{
+
+		}
+
+		public SubredditOptionSet(AbstractSubredditOptionSet toCopyFrom)
+		{
+			// TODO: is there a better way to do this?
+			this.Enabled = toCopyFrom.Enabled;
+			this.ScanPosts = toCopyFrom.ScanPosts;
+			this.ScanComments = toCopyFrom.ScanComments;
+			this.BanNote = toCopyFrom.BanNote;
+			this.BanMessage = toCopyFrom.BanMessage;
+			this.BanDuration = toCopyFrom.BanDuration;
+			this.IgnoredUsers = toCopyFrom.IgnoredUsers;
+			this.RemovalType = toCopyFrom.RemovalType;
+		}
+
 		public override Boolean Enabled { get; set; } = true;
 
 		public override Boolean ScanPosts { get; set; } = true;
