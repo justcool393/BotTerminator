@@ -40,6 +40,8 @@ namespace BotTerminator.Modules
 				if (!options.Enabled) return;
 				try
 				{
+					if (!options.ScanPosts && thing is Post) return;
+					if (!options.ScanComments && thing is Comment) return;
 					if (options.RemovalType == RemovalType.Spam)
 					{
 						await thing.RemoveSpamAsync();
