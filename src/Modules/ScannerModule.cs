@@ -36,7 +36,8 @@ namespace BotTerminator.Modules
 		{
 			if (await bot.CheckShouldBanAsync(thing))
 			{
-				AbstractSubredditOptionSet options = GlobalConfig.GlobalOptions;
+				CachedSubreddit subreddit = bot.SubredditLookup[thing["subreddit"].Value<String>()];
+				AbstractSubredditOptionSet options = new ShadedOptionSet(new[] { subreddit.Options, GlobalConfig.GlobalOptions }, true);
 				if (!options.Enabled) return;
 				try
 				{
@@ -46,7 +47,7 @@ namespace BotTerminator.Modules
 					{
 						await thing.RemoveSpamAsync();
 					}
-					else
+					else if (options.RemovalType == RemovalType.Remove)
 					{
 						await thing.RemoveAsync();
 					}
@@ -57,7 +58,7 @@ namespace BotTerminator.Modules
 				}
 				if (options.BanDuration > -1)
 				{
-					await bot.SubredditLookup[thing["subreddit"].Value<String>()].BanUserAsync(thing.AuthorName, options.BanNote, null, options.BanDuration, options.BanMessage);
+					await subreddit.RedditSubreddit.BanUserAsync(thing.AuthorName, options.BanNote.Trim(), null, options.BanDuration, options.BanMessage.Trim());
 				}
 			}
 		}

@@ -1,5 +1,7 @@
 ﻿using BotTerminator.Configuration;
+using BotTerminator.Configuration.Loader;
 using BotTerminator.Data;
+using BotTerminator.Models;
 using BotTerminator.Modules;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -21,6 +23,7 @@ namespace BotTerminator
 		{
 			"btproof", "botbustproof",
 		};
+		private static readonly IConfigurationLoader<String, SubredditConfig> configurationLoader = new JsonConfigurationLoader<SubredditConfig>();
 
 		private readonly AuthenticationConfig authConfig;
 
@@ -35,7 +38,7 @@ namespace BotTerminator
 		internal GlobalConfig GlobalConfig { get; private set; }
 		internal Reddit RedditInstance { get; private set; }
 		private IReadOnlyCollection<BotModule> Modules { get; set; }
-		internal Dictionary<String, Subreddit> SubredditLookup { get; private set; } = new Dictionary<String, Subreddit>();
+		internal Dictionary<String, CachedSubreddit> SubredditLookup { get; private set; } = new Dictionary<String, CachedSubreddit>();
 		internal String SubredditName => authConfig.SubredditName;
 		public IBotDatabase UserLookup { get; private set; }
 		internal IWebAgent WebAgent { get; private set; }
@@ -84,17 +87,25 @@ namespace BotTerminator
 
 		public async Task UpdateSubredditCacheAsync()
 		{
+			ICollection<Subreddit> moderatedSubreddits = new List<Subreddit>();
 			await RedditInstance.User.GetModeratorSubreddits(-1).ForEachAsync(subreddit =>
+			{
+				moderatedSubreddits.Add(subreddit);
+			});
+			foreach (Subreddit subreddit in moderatedSubreddits)
 			{
 				if (!SubredditLookup.ContainsKey(subreddit.DisplayName))
 				{
-					SubredditLookup.Add(subreddit.DisplayName, subreddit);
+					SubredditLookup.Add(subreddit.DisplayName, new CachedSubreddit(subreddit, configurationLoader));
 				}
 				else
 				{
-					SubredditLookup[subreddit.DisplayName] = subreddit;
+					SubredditLookup[subreddit.DisplayName] = new CachedSubreddit(subreddit, configurationLoader);
 				}
-			});
+				await SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync();
+			}
+			await Task.WhenAll(moderatedSubreddits.Where(subreddit => subreddit.ModPermissions.HasFlag(ModeratorPermission.Wiki))
+			                                      .Select(subreddit => SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync()));
 		}
 
 		/// <summary>
