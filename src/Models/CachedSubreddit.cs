@@ -12,13 +12,15 @@ namespace BotTerminator.Models
 {
 	public class CachedSubreddit
 	{
-		private const String pageName = "botconfig/botterminator";
+		private const String pageName = "botConfig/botTerminator";
 		public const Int32 minSupportedVersion = 1;
 		public const Int32 maxSupportedVersion = 1;
 
 		public String Name => RedditSubreddit.DisplayName;
 		public Subreddit RedditSubreddit { get; set; }
-		public SubredditOptionSet Options { get; set; }
+		public SubredditConfig SubredditConfig { get; set; }
+
+		public SubredditOptionSet Options => SubredditConfig.Options;
 
 		private IConfigurationLoader<String, SubredditConfig> ConfigurationLoader { get; set; }
 
@@ -28,11 +30,11 @@ namespace BotTerminator.Models
 			this.ConfigurationLoader = configurationLoader;
 		}
 
-		private async Task<SubredditOptionSet> ReadConfigFromWikiAsync()
+		private async Task<SubredditConfig> ReadConfigFromWikiAsync()
 		{
 			SubredditConfig config = await ConfigurationLoader.LoadConfigAsync((await RedditSubreddit.GetWiki.GetPageAsync(pageName)).MarkdownContent);
 			config.ValidateSupportedVersion(minSupportedVersion, maxSupportedVersion);
-			return config.Options;
+			return config;
 		}
 		
 		private async Task<bool> PageExistsAsync()
@@ -45,22 +47,26 @@ namespace BotTerminator.Models
 			// TODO: check permissions
 			if (await PageExistsAsync())
 			{
-				Options = await ReadConfigFromWikiAsync();
+				SubredditConfig = await ReadConfigFromWikiAsync();
 			}
 			else
 			{
-				Options = null;
+				SubredditConfig = null;
 			}
 		}
 
 		public async Task<bool> SaveDefaultOptionSetAsync(AbstractSubredditOptionSet defaultSet, bool overrideIfExists = false)
 		{
-			SubredditOptionSet options = new SubredditOptionSet(defaultSet);
-			// TODO: check permissions
-			if (!await PageExistsAsync() || overrideIfExists)
+			SubredditConfig = new SubredditConfig()
 			{
-				Options = options;
-				await RedditSubreddit.GetWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(options), null, "creating new BotTerminator config");
+				Version = 1,
+				Options = new SubredditOptionSet(),
+			};
+			// TODO: check permissions
+			if (overrideIfExists || !await PageExistsAsync())
+			{
+				await RedditSubreddit.GetWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(SubredditConfig, Formatting.Indented), null, "creating new BotTerminator config");
+				await RedditSubreddit.GetWiki.SetPageSettingsAsync(pageName, true, RedditSharp.WikiPageSettings.WikiPagePermissionLevel.Mods);
 				return true;
 			} 
 			else

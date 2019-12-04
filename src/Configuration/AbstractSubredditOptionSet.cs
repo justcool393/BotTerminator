@@ -1,5 +1,6 @@
 ﻿using BotTerminator.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,6 +42,7 @@ namespace BotTerminator.Configuration
 		/// <see cref="RedditSharp.Things.ModeratableThing.RemoveAsync"/>
 		/// <see cref="RedditSharp.Things.ModeratableThing.RemoveSpamAsync"/>
 		[JsonProperty("removalType")]
+		[JsonConverter(typeof(StringEnumConverter))]
 		public abstract RemovalType RemovalType { get; set; }
 	}
 }
