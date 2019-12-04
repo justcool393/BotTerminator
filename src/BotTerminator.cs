@@ -92,20 +92,34 @@ namespace BotTerminator
 			{
 				moderatedSubreddits.Add(subreddit);
 			});
-			foreach (Subreddit subreddit in moderatedSubreddits)
+			foreach (Subreddit subreddit in moderatedSubreddits.Where(subreddit => IsConfigurable(subreddit)))
 			{
 				if (!SubredditLookup.ContainsKey(subreddit.DisplayName))
 				{
 					SubredditLookup.Add(subreddit.DisplayName, new CachedSubreddit(subreddit, configurationLoader));
+					try
+					{
+						await SubredditLookup[subreddit.DisplayName].SaveDefaultOptionSetAsync(GlobalConfig.GlobalOptions, false);
+					}
+					catch (RedditHttpException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+					{
+						Console.WriteLine("Failed to create configuration for subreddit /r/{0}: forbidden", subreddit.DisplayName);
+					}
 				}
 				else
 				{
 					SubredditLookup[subreddit.DisplayName] = new CachedSubreddit(subreddit, configurationLoader);
 				}
-				await SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync();
 			}
-			await Task.WhenAll(moderatedSubreddits.Where(subreddit => subreddit.ModPermissions.HasFlag(ModeratorPermission.Wiki))
+			await Task.WhenAll(moderatedSubreddits.Where(subreddit => IsConfigurable(subreddit))
 			                                      .Select(subreddit => SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync()));
+		}
+
+		private bool IsConfigurable(Subreddit subreddit)
+		{
+			return !subreddit.DisplayName.Equals(authConfig.SubredditName, StringComparison.InvariantCultureIgnoreCase) &&
+			       subreddit.ModPermissions.HasFlag(ModeratorPermission.Wiki) &&
+				   subreddit["subreddit_type"].Value<String>() != "user";
 		}
 
 		/// <summary>
