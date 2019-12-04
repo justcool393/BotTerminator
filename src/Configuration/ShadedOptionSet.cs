@@ -16,7 +16,7 @@ namespace BotTerminator.Configuration
 
 		public ShadedOptionSet(IReadOnlyCollection<AbstractSubredditOptionSet> optionSets, bool enumerablesAdditive)
 		{
-			this.optionSets = optionSets;
+			this.optionSets = optionSets.Where(optionSet => optionSet != null).ToList();
 			this.enumerablesAdditive = enumerablesAdditive;
 		}
 
@@ -43,7 +43,7 @@ namespace BotTerminator.Configuration
 		{
 			get
 			{
-				return optionSets.First().ScanPosts;
+				return optionSets.First().ScanComments;
 			}
 			set => throw new NotSupportedException(operationNotSupportedMessage);
 		}
