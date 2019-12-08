@@ -25,8 +25,6 @@ namespace BotTerminator
 		};
 		private static readonly IConfigurationLoader<String, SubredditConfig> configurationLoader = new JsonConfigurationLoader<SubredditConfig>();
 
-		private readonly AuthenticationConfig authConfig;
-
 		public const String CacheFreshenerUserName = "reddit";
 		private const String DeletedUserName = "[deleted]";
 		public const String HideUrl = "/api/hide";
@@ -35,19 +33,20 @@ namespace BotTerminator
 		public const Int32 PageLimit = 100;
 		public const String QuarantineOptInUrl = "/api/quarantine";
 
+		internal AuthenticationConfig AuthenticationConfig { get; private set; }
 		internal GlobalConfig GlobalConfig { get; private set; }
 		internal Reddit RedditInstance { get; private set; }
 		private IReadOnlyCollection<BotModule> Modules { get; set; }
 		internal Dictionary<String, CachedSubreddit> SubredditLookup { get; private set; } = new Dictionary<String, CachedSubreddit>();
-		internal String SubredditName => authConfig.SubredditName;
+		public String SubredditName => AuthenticationConfig.SubredditName;
 		public IBotDatabase UserLookup { get; private set; }
 		internal IWebAgent WebAgent { get; private set; }
 
-		public BotTerminator(IWebAgent webAgent, Reddit RedditInstance, AuthenticationConfig authConfig)
+		public BotTerminator(IWebAgent webAgent, Reddit redditInstance, AuthenticationConfig authenticationConfig)
 		{
 			this.WebAgent = webAgent;
-			this.RedditInstance = RedditInstance;
-			this.authConfig = authConfig; 
+			this.RedditInstance = redditInstance;
+			this.AuthenticationConfig = authenticationConfig;
 			this.Modules = new List<BotModule>()
 			{
 				new CommentScannerModule(this), new PostScannerModule(this),
@@ -120,7 +119,7 @@ namespace BotTerminator
 
 		private bool IsConfigurable(Subreddit subreddit)
 		{
-			return !subreddit.DisplayName.Equals(authConfig.SubredditName, StringComparison.InvariantCultureIgnoreCase) &&
+			return !subreddit.DisplayName.Equals(AuthenticationConfig.SubredditName, StringComparison.InvariantCultureIgnoreCase) &&
 			       subreddit.ModPermissions.HasFlag(ModeratorPermission.Wiki) &&
 				   subreddit["subreddit_type"].Value<String>() != "user";
 		}

@@ -20,7 +20,10 @@ namespace BotTerminator.Configuration
 		[JsonProperty("redirectUri", Required = Required.Always)]
 		public String RedirectUri { get; set; }
 
-		[JsonProperty("srName")]
+		[JsonProperty("srName", Required = Required.Always)]
 		public String SubredditName { get; set; } = "BotTerminator";
+
+		[JsonProperty("statusPageApiKey")]
+		public String StatusPageApiKey { get; set; }
 	}
 }

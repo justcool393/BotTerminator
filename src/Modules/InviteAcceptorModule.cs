@@ -1,4 +1,6 @@
-﻿using RedditSharp;
+﻿using BotTerminator.Exceptions;
+using BotTerminator.Models;
+using RedditSharp;
 using RedditSharp.Things;
 using System;
 using System.Collections.Generic;
@@ -22,7 +24,7 @@ namespace BotTerminator.Modules
 		private static readonly Regex moderatorAddRegex = new Regex(@"^you have been added as a moderator to \[/r/((?:t:)?\w_-\.)+:.*\]\(/r/.+\)\.$", RegexOptions.Compiled);
 		private const String moderatorRemoval = " has been removed as a moderator from /r/";
 
-		public InviteAcceptorModule(BotTerminator bot) : base(bot, bot.RedditInstance.User.GetUnreadMessages(-1))
+		public InviteAcceptorModule(BotTerminator bot) : base(bot, bot.GlobalConfig.InviteAcceptorMetricId, bot.RedditInstance.User.GetUnreadMessages(-1))
 		{
 			
 		}

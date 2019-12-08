@@ -1,4 +1,5 @@
-﻿using RedditSharp;
+﻿using BotTerminator.Exceptions;
+using RedditSharp;
 using RedditSharp.Things;
 using System;
 using System.Collections.Generic;
@@ -8,14 +9,16 @@ using System.Threading.Tasks;
 
 namespace BotTerminator.Modules
 {
-	public abstract class ListingBotModule<T> : BotModule where T : Thing
+	public abstract class ListingBotModule<T> : StatusPagePushableBotModule where T : Thing
 	{
 		protected Listing<T> Listing { get; }
+		protected sealed override String MetricId { get; }
 		protected bool RequireUnique { get; set; }
 		protected bool RequireInOrder { get; set; }
 
-		protected ListingBotModule(BotTerminator bot, Listing<T> listing) : base(bot)
+		protected ListingBotModule(BotTerminator bot, String metricId, Listing<T> listing) : base(bot)
 		{
+			MetricId = metricId;
 			Listing = listing;
 		}
 
@@ -48,6 +51,18 @@ namespace BotTerminator.Modules
 			else
 			{
 				await Task.WhenAll(things.Select(thing => RunItemAsync(thing)));
+			}
+			try
+			{
+				await PushMetricAsync(new Models.MetricData()
+				{
+					Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+					Value = things.Count,
+				});
+			}
+			catch (StatusPagePushException)
+			{
+
 			}
 			await PostRunItemsAsync(things);
 		}
