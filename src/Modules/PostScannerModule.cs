@@ -6,7 +6,7 @@ namespace BotTerminator.Modules
 {
 	public class PostScannerModule : ScannerModule<Post>
 	{
-		public PostScannerModule(BotTerminator bot) : base(bot, bot.RedditInstance.GetListing<Post>(BotTerminator.NewModUrl, 250, BotTerminator.PageLimit))
+		public PostScannerModule(BotTerminator bot) : base(bot, null, bot.RedditInstance.GetListing<Post>(BotTerminator.NewModUrl, 250, BotTerminator.PageLimit))
 		{
 			RunForeverCooldown = new TimeSpan(0, 0, 10);
 		}

@@ -22,6 +22,15 @@ namespace BotTerminator.Configuration
 		[JsonProperty("globalOptions", Required = Required.Always)]
 		public SubredditOptionSet GlobalOptions { get; set; }
 
+		[JsonProperty("banListMetricId")]
+		public String BanListMetricId { get; set; }
+
+		[JsonProperty("inviteAcceptorMetricId")]
+		public String InviteAcceptorMetricId { get; set; }
+
+		[JsonProperty("statusPagePageId")]
+		public String StatusPagePageId { get; set; }
+
 		[JsonProperty("globalIgnoreList")]
 		public IReadOnlyList<String> GlobalIgnoreList { get; set; } = new List<String>(2)
 		{

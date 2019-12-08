@@ -15,7 +15,7 @@ namespace BotTerminator.Modules
 
 		private static bool first = true;
 
-		public UpdateBanListModule(BotTerminator bot) : base(bot, bot.RedditInstance.GetListing<Post>("/r/" + bot.SubredditName + "/new", -1, BotTerminator.PageLimit))
+		public UpdateBanListModule(BotTerminator bot) : base(bot, bot.GlobalConfig.BanListMetricId, bot.RedditInstance.GetListing<Post>("/r/" + bot.SubredditName + "/new", -1, BotTerminator.PageLimit))
 		{
 			RequireUnique = true;
 		}

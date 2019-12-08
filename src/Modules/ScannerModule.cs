@@ -12,7 +12,7 @@ namespace BotTerminator.Modules
 {
 	public class ScannerModule<T> : ListingBotModule<T> where T : ModeratableThing
 	{
-		public ScannerModule(BotTerminator bot, Listing<T> listing) : base(bot, listing)
+		public ScannerModule(BotTerminator bot, String metricId, Listing<T> listing) : base(bot, metricId, listing)
 		{
 		}
 

@@ -6,7 +6,7 @@ namespace BotTerminator.Modules
 {
 	public class CommentScannerModule : ScannerModule<Comment>
 	{
-		public CommentScannerModule(BotTerminator bot) : base(bot, bot.RedditInstance.GetListing<Comment>(BotTerminator.NewModCommentsUrl, 250, BotTerminator.PageLimit))
+		public CommentScannerModule(BotTerminator bot) : base(bot, null, bot.RedditInstance.GetListing<Comment>(BotTerminator.NewModCommentsUrl, 250, BotTerminator.PageLimit))
 		{
 			RunForeverCooldown = new TimeSpan(0, 0, 0);
 		}
