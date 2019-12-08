@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace BotTerminator.Exceptions
 {
-	public class UnsupportedConfigVersionException : BotTerminatorException
+	public class UnsupportedConfigVersionException : ConfigurationException
 	{
 		private const String baseExceptionMessage = "The configuration version that was loaded is not supported";
 

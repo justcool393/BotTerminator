@@ -1,6 +1,8 @@
 ﻿using BotTerminator.Configuration;
 using BotTerminator.Configuration.Loader;
+using BotTerminator.Exceptions;
 using Newtonsoft.Json;
+using RedditSharp;
 using RedditSharp.Things;
 using System;
 using System.Collections.Generic;
@@ -45,14 +47,23 @@ namespace BotTerminator.Models
 		public async Task ReloadOptionsAsync()
 		{
 			// TODO: check permissions
-			if (await PageExistsAsync())
+			try
 			{
-				SubredditConfig = await ReadConfigFromWikiAsync();
+				if (await PageExistsAsync())
+				{
+					SubredditConfig = await ReadConfigFromWikiAsync();
+					return;
+				}
 			}
-			else
+			catch (RedditHttpException redditException)
 			{
-				SubredditConfig = null;
+				//throw new ConfigurationException("Failed to read config due to Reddit error", redditException);
 			}
+			catch (JsonReaderException readerException)
+			{
+				//throw new ConfigurationException("Error reading the config", readerException);
+			}
+			SubredditConfig = new SubredditConfig();
 		}
 
 		public async Task<bool> SaveDefaultOptionSetAsync(AbstractSubredditOptionSet defaultSet, bool overrideIfExists = false)

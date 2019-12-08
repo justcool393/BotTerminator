@@ -92,27 +92,30 @@ namespace BotTerminator
 			{
 				moderatedSubreddits.Add(subreddit);
 			});
-			foreach (Subreddit subreddit in moderatedSubreddits.Where(subreddit => IsConfigurable(subreddit)))
+			foreach (Subreddit subreddit in moderatedSubreddits)
 			{
 				if (!SubredditLookup.ContainsKey(subreddit.DisplayName))
 				{
 					SubredditLookup.Add(subreddit.DisplayName, new CachedSubreddit(subreddit, configurationLoader));
-					try
+					if (IsConfigurable(subreddit))
 					{
-						await SubredditLookup[subreddit.DisplayName].SaveDefaultOptionSetAsync(GlobalConfig.GlobalOptions, false);
+						try
+						{
+							await SubredditLookup[subreddit.DisplayName].SaveDefaultOptionSetAsync(GlobalConfig.GlobalOptions, false);
+						}
+						catch (RedditHttpException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+						{
+							Console.WriteLine("Failed to create configuration for subreddit /r/{0}: forbidden", subreddit.DisplayName);
+						}
 					}
-					catch (RedditHttpException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
-					{
-						Console.WriteLine("Failed to create configuration for subreddit /r/{0}: forbidden", subreddit.DisplayName);
-					}
+					
 				}
 				else
 				{
 					SubredditLookup[subreddit.DisplayName] = new CachedSubreddit(subreddit, configurationLoader);
 				}
 			}
-			await Task.WhenAll(moderatedSubreddits.Where(subreddit => IsConfigurable(subreddit))
-			                                      .Select(subreddit => SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync()));
+			await Task.WhenAll(moderatedSubreddits.Select(subreddit => SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync()));
 		}
 
 		private bool IsConfigurable(Subreddit subreddit)
