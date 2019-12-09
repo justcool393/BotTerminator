@@ -41,7 +41,7 @@ namespace BotTerminator.Models
 		
 		private async Task<bool> PageExistsAsync()
 		{
-			return (await RedditSubreddit.GetWiki.GetPageNamesAsync()).Contains(pageName);
+			return (await RedditSubreddit.GetWiki.GetPageNamesAsync()).Contains(pageName.ToLowerInvariant());
 		}
 
 		public async Task ReloadOptionsAsync()
