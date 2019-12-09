@@ -5,6 +5,7 @@ using System.Text;
 
 namespace BotTerminator.Models
 {
+	[JsonObject]
 	public class MetricData
 	{
 		[JsonProperty("timestamp")]

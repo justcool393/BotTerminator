@@ -31,13 +31,13 @@ namespace BotTerminator.Modules
 		{
 			if (PageId == null)
 			{
-				throw new StatusPagePushException("Cannot push to status page when page id is null");
+				throw new StatusPagePushException("Cannot push to status page when page id is null", new ArgumentNullException(nameof(PageId)));
 			}
 			else if (MetricId == null)
 			{
-				throw new StatusPagePushException("Cannot push to status page when metric id is null");
+				throw new StatusPagePushException("Cannot push to status page when metric id is null", new ArgumentNullException(nameof(MetricId)));
 			}
-			JObject data = new JObject(new JProperty("data", new JObject(new JProperty(MetricId, metric))));
+			JObject data = new JObject(new JProperty("data", JObject.FromObject(metric)));
 			try
 			{
 				StringContent content = new StringContent(data.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
