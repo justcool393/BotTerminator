@@ -60,9 +60,12 @@ namespace BotTerminator.Modules
 					Value = things.Count,
 				});
 			}
-			catch (StatusPagePushException)
+			catch (StatusPagePushException ex)
 			{
-
+				if (!(ex.InnerException is ArgumentNullException))
+				{
+					Console.WriteLine("Failed to push to StatusPage: {0}", ex.Message);
+				}
 			}
 			await PostRunItemsAsync(things);
 		}
