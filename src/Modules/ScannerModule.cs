@@ -25,7 +25,7 @@ namespace BotTerminator.Modules
 		protected override sealed Boolean PreRunItem(T thing)
 		{
 			if (BotTerminator.IsUnbannable(thing) ||
-				   thing.BannedBy != null || thing.BannedBy == RedditInstance.User.Name ||
+				   (thing.BannedBy != null && thing.BannedBy == RedditInstance.User.Name) ||
 				   (!GlobalConfig.AllowNsfw && thing["over_18"].Value<bool?>().GetValueOrDefault(false)) ||
 				   (!GlobalConfig.AllowQuarantined && thing["quarantine"].Value<bool?>().GetValueOrDefault(false))) return false;
 			// all distinguishes are given to moderators (who can't be banned) or known humans
