@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using RedditSharp;
 using RedditSharp.Things;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -34,6 +35,7 @@ namespace BotTerminator
 		public const Int32 PageLimit = 100;
 		public const String QuarantineOptInUrl = "/api/quarantine";
 
+		internal ConcurrentQueue<Func<HttpRequestMessage>> StatusPageQueue { get; private set; }
 		internal AuthenticationConfig AuthenticationConfig { get; private set; }
 		internal GlobalConfig GlobalConfig { get; private set; }
 		internal Reddit RedditInstance { get; private set; }
@@ -48,6 +50,7 @@ namespace BotTerminator
 			this.WebAgent = webAgent;
 			this.RedditInstance = redditInstance;
 			this.AuthenticationConfig = authenticationConfig;
+			this.StatusPageQueue = new ConcurrentQueue<Func<HttpRequestMessage>>();
 		}
 
 		public async Task StartAsync()
@@ -81,6 +84,7 @@ namespace BotTerminator
 				new CommentScannerModule(this), new PostScannerModule(this),
 				new RemovedPostScannerModule(this), new InviteAcceptorModule(this),
 				new CacheFreshenerModule(this), new UpdateBanListModule(this),
+				new StatusPageStatusPusherModule(this),
 			};
 
 			await Task.WhenAll(Modules.Select(s => s.RunForeverAsync()));
