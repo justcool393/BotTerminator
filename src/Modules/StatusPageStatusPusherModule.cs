@@ -54,9 +54,6 @@ namespace BotTerminator.Modules
 			return Task.CompletedTask;
 		}
 
-		public override Task TeardownAsync()
-		{
-			throw new NotImplementedException();
-		}
+		public override Task TeardownAsync() => Task.CompletedTask;
 	}
 }
