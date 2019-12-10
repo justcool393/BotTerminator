@@ -30,6 +30,7 @@ namespace BotTerminator
 		public const String HideUrl = "/api/hide";
 		public const String NewModCommentsUrl = "/r/mod/comments";
 		public const String NewModUrl = "/r/mod/new";
+		public const String ModRemovedUrl = "/r/mod/about/spam?only=links";
 		public const Int32 PageLimit = 100;
 		public const String QuarantineOptInUrl = "/api/quarantine";
 
@@ -78,8 +79,8 @@ namespace BotTerminator
 			this.Modules = new List<BotModule>()
 			{
 				new CommentScannerModule(this), new PostScannerModule(this),
-				new InviteAcceptorModule(this), new CacheFreshenerModule(this),
-				new UpdateBanListModule(this),
+				new RemovedPostScannerModule(this), new InviteAcceptorModule(this),
+				new CacheFreshenerModule(this), new UpdateBanListModule(this),
 			};
 
 			await Task.WhenAll(Modules.Select(s => s.RunForeverAsync()));
