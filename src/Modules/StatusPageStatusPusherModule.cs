@@ -8,13 +8,17 @@ namespace BotTerminator.Modules
 {
 	public class StatusPageStatusPusherModule : BotModule
 	{
-		private HttpClient statusPageClient;
 		private const Int32 MaxRetryValue = 10;
+		
 		private static readonly TimeSpan StatusPagePushWait = new TimeSpan(0, 0, 10);
+
+		private HttpClient statusPageClient;
+
 
 		public StatusPageStatusPusherModule(BotTerminator bot) : base(bot)
 		{
 			this.statusPageClient = new HttpClient();
+			this.statusPageClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("OAuth", bot.AuthenticationConfig.StatusPageApiKey);
 		}
 
 		public override async Task RunOnceAsync()
@@ -33,10 +37,13 @@ namespace BotTerminator.Modules
 					}
 					catch (Exception ex) when (ex is HttpRequestException || ex is OperationCanceledException)
 					{
-						Console.WriteLine("Failed to push to statuspage (try {0}/{1}): {2}", retry, MaxRetryValue, ex.Message);
+						Console.WriteLine("Failed to push to StatusPage (try {0}/{1}): {2}", retry, MaxRetryValue, ex.Message);
+					}
+					finally
+					{
+						await Task.Delay(StatusPagePushWait);
 					}
 					retry++;
-					await Task.Delay(StatusPagePushWait);
 				}
 			}
 		}
