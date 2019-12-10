@@ -14,43 +14,33 @@ namespace BotTerminator.Modules
 	{
 		private const String ApiBaseUrl = "https://api.statuspage.io/v1/pages/{0}/metrics/{1}/data.json";
 
-		private HttpClient client { get; set; }
-
-		private String PageId { get; set; }
-
 		protected abstract String MetricId { get; }
-		
-		protected StatusPagePushableBotModule(BotTerminator bot) : base(bot)
-		{
-			client = new HttpClient();
-			client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("OAuth", bot.AuthenticationConfig.StatusPageApiKey);
-			PageId = bot.GlobalConfig.StatusPagePageId;
+
+		protected StatusPagePushableBotModule(BotTerminator bot) : base(bot) 
+		{ 
+  
 		}
 
-		protected async Task PushMetricAsync(MetricData metric)
+		protected Task PushMetricAsync(MetricData metric)
 		{
-			if (PageId == null)
+			if (bot.GlobalConfig.StatusPagePageId == null)
 			{
-				throw new StatusPagePushException("Cannot push to status page when page id is null", new ArgumentNullException(nameof(PageId)));
+				throw new StatusPagePushException("Cannot push to status page when page id is null", new ArgumentNullException(nameof(bot.GlobalConfig.StatusPagePageId)));
 			}
 			else if (MetricId == null)
 			{
 				throw new StatusPagePushException("Cannot push to status page when metric id is null", new ArgumentNullException(nameof(MetricId)));
 			}
 			JObject data = new JObject(new JProperty("data", JObject.FromObject(metric)));
-			try
+			bot.StatusPageQueue.Enqueue(() =>
 			{
 				StringContent content = new StringContent(data.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
-				await client.PostAsync(String.Format(ApiBaseUrl, PageId, MetricId), content);
-			}
-			catch (HttpRequestException ex)
-			{
-				throw new StatusPagePushException(ex.Message, ex);
-			}
-			catch (OperationCanceledException ex)
-			{
-				throw new StatusPagePushException(ex.Message, ex);
-			}
+				return new HttpRequestMessage(HttpMethod.Post, String.Format(ApiBaseUrl, bot.GlobalConfig.StatusPagePageId, MetricId))
+				{
+					Content = content,
+				};
+			});
+			return Task.CompletedTask;
 		}
 	}
 }
