@@ -27,7 +27,7 @@ namespace BotTerminator.Modules
 			{
 				bool success = false;
 				int retry = 1;
-				while (!success || retry <= MaxRetryValue)
+				while (!success && retry <= MaxRetryValue)
 				{
 					try
 					{
