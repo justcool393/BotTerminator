@@ -49,11 +49,9 @@ namespace BotTerminator.Models
 			// TODO: check permissions
 			try
 			{
-				if (await PageExistsAsync())
-				{
-					SubredditConfig = await ReadConfigFromWikiAsync();
-					return;
-				}
+				// catching the 404 here instead of an if check uses less requests and as such will be quicker
+				SubredditConfig = await ReadConfigFromWikiAsync();
+				return;
 			}
 			catch (RedditHttpException redditException)
 			{
@@ -77,7 +75,7 @@ namespace BotTerminator.Models
 			if (overrideIfExists || !await PageExistsAsync())
 			{
 				await RedditSubreddit.GetWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(SubredditConfig, Formatting.Indented), null, "creating new BotTerminator config");
-				await RedditSubreddit.GetWiki.SetPageSettingsAsync(pageName, true, RedditSharp.WikiPageSettings.WikiPagePermissionLevel.Mods);
+				await RedditSubreddit.GetWiki.SetPageSettingsAsync(pageName, true, WikiPageSettings.WikiPagePermissionLevel.Mods);
 				return true;
 			} 
 			else
