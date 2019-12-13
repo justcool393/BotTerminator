@@ -63,9 +63,7 @@ namespace BotTerminator.Modules
 		{
 			// We don't need to even look at meta posts
 			BanListConfig config = await bot.UserLookup.GetConfigAsync();
-
-			bool shouldIgnore = config.NonGroupFlairCssClasses.Contains(subredditPost.AuthorFlairCssClass);
-			if (shouldIgnore) return;
+			IEnumerable<String> groups = GetGroupNames(subredditPost.LinkFlairCssClass).Where(group => !config.NonGroupFlairCssClasses.Contains(group));
 			/* 
 			 * We don't use the post.Url property here because if the Url is not a
 			 * well formed URI, RedditSharp throws an UriFormatException. The cases
@@ -75,7 +73,10 @@ namespace BotTerminator.Modules
 			if (match == null || match.Groups.Count != 2) return;
 			Console.WriteLine("Found new bot to ban " + match.Groups[1].Value);
 			String targetUserName = match.Groups[1].Value;
-			//await bot.UserLookup.UpdateUserAsync(targetUserName, true, first);
+			foreach (String group in groups)
+			{
+				await bot.UserLookup.UpdateUserAsync(targetUserName, group, true, first);
+			}
 			first = false;
 		}
 	}
