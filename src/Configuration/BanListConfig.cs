@@ -43,7 +43,7 @@ namespace BotTerminator.Configuration
 
 		public bool IsInGroup(String groupCssClass, String username)
 		{
-			return GroupLookup[groupCssClass].Members.Contains(username);
+			return GroupLookup.ContainsKey(groupCssClass) && GroupLookup[groupCssClass].Members.Contains(username);
 		}
 
 		public bool IsInAnyGroup(String username)
