@@ -11,6 +11,11 @@ namespace BotTerminator.Data
 	public class MemoryBotDatabase : IBotDatabase
 	{
 		private BanListConfig Users { get; set; } = new BanListConfig();
+
+		public Task<BanListConfig> GetConfigAsync() => Task.FromResult(Users);
+
+		public Task<IReadOnlyDictionary<String, Group>> GetAllGroupsAsync() => Task.FromResult<IReadOnlyDictionary<String, Group>>(Users.GroupLookup);
+
 		public Task<Boolean> CheckUserAsync(String username, String groupName) => Task.FromResult(Users.IsInGroup(groupName, username));
 
 		public Task<IReadOnlyCollection<Group>> GetDefaultBannedGroupsAsync() => Task.FromResult(Users.GroupLookup.Where(group => group.Value.ActionByDefault).ToList() as IReadOnlyCollection<Group>);

@@ -163,7 +163,9 @@ namespace BotTerminator
 			return groupNames.Any(groupName => bannedGroups.Contains(groupName));
 		}
 
+#pragma warning disable IDE0060
 		internal async Task<IReadOnlyCollection<Models.Group>> GetBannedGroupsAsync(String subredditName)
+#pragma warning restore IDE0060
 		{
 			return await UserLookup.GetDefaultBannedGroupsAsync();
 		}

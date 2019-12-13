@@ -1,4 +1,5 @@
-﻿using BotTerminator.Models;
+﻿using BotTerminator.Configuration;
+using BotTerminator.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,10 @@ namespace BotTerminator.Data
 {
 	public interface IBotDatabase
 	{
+		Task<BanListConfig> GetConfigAsync();
+
+		Task<IReadOnlyDictionary<String, Group>> GetAllGroupsAsync();
+
 		Task<IReadOnlyCollection<Group>> GetGroupsForUserAsync(String name);
 
 		Task<IReadOnlyCollection<Group>> GetDefaultBannedGroupsAsync();
