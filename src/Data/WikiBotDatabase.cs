@@ -53,10 +53,16 @@ namespace BotTerminator.Data
 
 		public async Task UpdateUserAsync(String name, String group, Boolean value, Boolean force)
 		{
-			if (value)
+			if (Cache.GroupLookup.ContainsKey(group))
 			{
-				throw new NotImplementedException();
-				//Cache.Items.Add(name);
+				if (value)
+				{
+					Cache.GroupLookup[group].Members.Add(name);
+				}
+				else
+				{
+					Cache.GroupLookup[group].Members.Remove(name);
+				}
 			}
 			if (force || IsStale)
 			{

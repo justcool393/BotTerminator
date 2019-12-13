@@ -46,7 +46,7 @@ namespace BotTerminator.Modules
 			if (!options.ScanPosts && thing is Post) return;
 			if (!options.ScanComments && thing is Comment) return;
 
-			IReadOnlyCollection<Group> bannedGroups = await bot.GetBannedGroupsAsync(subreddit.Name);
+			IReadOnlyCollection<Group> bannedGroups = await bot.GetBannedGroupsAsync(options);
 
 			if (await bot.CheckShouldBanAsync(thing, bannedGroups.Select(group => group.Name)))
 			{

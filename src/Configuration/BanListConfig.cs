@@ -21,7 +21,7 @@ namespace BotTerminator.Configuration
 		public IReadOnlyCollection<String> NonGroupFlairCssClasses = Array.Empty<String>();
 
 		[JsonProperty("groups")]
-		public Dictionary<String, Group> GroupLookup { get; set; }
+		public Dictionary<String, Group> GroupLookup { get; set; } = new Dictionary<string, Group>();
 
 		[JsonIgnore]
 		public Int32 Count => GroupLookup.Values.Sum(group => group.Members.Count);

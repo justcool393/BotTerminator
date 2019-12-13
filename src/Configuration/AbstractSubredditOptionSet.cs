@@ -32,6 +32,9 @@ namespace BotTerminator.Configuration
 		[JsonProperty("banDuration", Required = Required.DisallowNull)]
 		public abstract Int32 BanDuration { get; set; }
 
+		[JsonProperty("actionedUserTypes")]
+		public abstract IEnumerable<String> ActionedUserTypes { get; set; }
+
 		[JsonProperty("ignoredUsers")]
 		public abstract IEnumerable<String> IgnoredUsers { get; set; }
 
