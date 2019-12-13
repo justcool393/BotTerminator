@@ -18,9 +18,13 @@ namespace BotTerminator.Models
 		public const Int32 minSupportedVersion = 1;
 		public const Int32 maxSupportedVersion = 1;
 
+		private static TimeSpan TimeToLive { get; set; } = new TimeSpan(0, 15, 0);
+
 		public String Name => RedditSubreddit.DisplayName;
 		public Subreddit RedditSubreddit { get; set; }
 		public SubredditConfig SubredditConfig { get; set; }
+		public DateTimeOffset LastRefreshedUtc { get; private set; }
+		public TimeSpan TimeSinceRefresh => DateTimeOffset.UtcNow - LastRefreshedUtc;
 
 		public SubredditOptionSet Options => SubredditConfig.Options;
 
@@ -52,10 +56,15 @@ namespace BotTerminator.Models
 				SubredditConfig = new SubredditConfig();
 				return;
 			}
+			else if (TimeSinceRefresh < TimeToLive && SubredditConfig != null)
+			{
+				return;
+			} 
 			try
 			{
 				// catching the 404 here instead of an if check uses less requests and as such will be quicker
 				SubredditConfig = await ReadConfigFromWikiAsync();
+				LastRefreshedUtc = DateTimeOffset.UtcNow;
 				return;
 			}
 			catch (RedditHttpException redditException)
