@@ -99,5 +99,15 @@ namespace BotTerminator.Configuration
 			}
 			set => throw new NotSupportedException(operationNotSupportedMessage);
 		}
+
+		public override IEnumerable<String> ActionedUserTypes
+		{
+			get
+			{
+				return optionSets.First(optionSet => optionSet.ActionedUserTypes != null).ActionedUserTypes;
+				// TODO: somehow respect enumerablesAdditive
+			}
+			set => throw new NotSupportedException(operationNotSupportedMessage);
+		}
 	}
 }

@@ -93,6 +93,7 @@ namespace BotTerminator
 		public async Task CacheSubredditAsync(String subredditName)
 		{
 			SubredditLookup[subredditName] = new CachedSubreddit(await RedditInstance.GetSubredditAsync(subredditName, false), configurationLoader);
+			await SubredditLookup[subredditName].ReloadOptionsAsync(this);
 		}
 
 		public async Task UpdateSubredditCacheAsync()
@@ -163,11 +164,10 @@ namespace BotTerminator
 			return groupNames.Any(groupName => bannedGroups.Contains(groupName));
 		}
 
-#pragma warning disable IDE0060
-		internal async Task<IReadOnlyCollection<Models.Group>> GetBannedGroupsAsync(String subredditName)
-#pragma warning restore IDE0060
+		internal async Task<IReadOnlyCollection<Models.Group>> GetBannedGroupsAsync(AbstractSubredditOptionSet options)
 		{
-			return await UserLookup.GetDefaultBannedGroupsAsync();
+			IReadOnlyCollection<String> actioned = options.ActionedUserTypes.ToHashSet();
+			return actioned.Count == 0 ? await UserLookup.GetDefaultBannedGroupsAsync() : (await UserLookup.GetAllGroupsAsync()).Values.Where(group => actioned.Contains(group.Name)).ToArray();
 		}
 
 		internal async Task QuarantineOptInAsync(String subredditName)

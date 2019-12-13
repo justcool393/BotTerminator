@@ -34,6 +34,7 @@ namespace BotTerminator.Models
 		{
 			this.RedditSubreddit = subreddit;
 			this.ConfigurationLoader = configurationLoader;
+			this.SubredditConfig = new SubredditConfig();
 		}
 
 		private async Task<SubredditConfig> ReadConfigFromWikiAsync()

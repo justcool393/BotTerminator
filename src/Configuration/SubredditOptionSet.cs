@@ -40,7 +40,11 @@ namespace BotTerminator.Configuration
 
 		public override Int32 BanDuration { get; set; } = 0;
 
+		// TODO: can we use a set here?
+
 		public override IEnumerable<String> IgnoredUsers { get; set; } = new List<String>(0);
+
+		public override IEnumerable<String> ActionedUserTypes { get; set; } = new List<String>(0);
 
 		public override RemovalType RemovalType { get; set; } = RemovalType.Spam;
 	}
