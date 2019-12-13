@@ -76,7 +76,7 @@ namespace BotTerminator
 				return;
 			}
 			UserLookup = new WikiBotDatabase(await RedditInstance.GetSubredditAsync(SubredditName, false));
-			await UserLookup.CheckUserAsync(CacheFreshenerUserName);
+			await UserLookup.CheckUserAsync(CacheFreshenerUserName, String.Empty);
 			await UpdateSubredditCacheAsync();
 
 			this.Modules = new List<BotModule>()
@@ -146,7 +146,7 @@ namespace BotTerminator
 		/// <returns>A value determining whether the user is not bannable on Reddit.</returns>
 		public static Boolean IsUnbannable(ModeratableThing thing) => String.IsNullOrWhiteSpace(thing?.AuthorName) || thing?.AuthorName == DeletedUserName;
 
-		internal async Task<Boolean> CheckShouldBanAsync(ModeratableThing thing)
+		internal async Task<Boolean> CheckShouldBanAsync(ModeratableThing thing, IEnumerable<String> bannedGroups)
 		{
 			if (IsUnbannable(thing)) return false;
 
@@ -159,7 +159,13 @@ namespace BotTerminator
 					return false;
 				}
 			}
-			return await UserLookup.CheckUserAsync(thing.AuthorName);
+			IEnumerable<String> groupNames = (await UserLookup.GetGroupsForUserAsync(thing.AuthorName)).Select(group => group.Name);
+			return groupNames.Any(groupName => bannedGroups.Contains(groupName));
+		}
+
+		internal async Task<IReadOnlyCollection<Models.Group>> GetBannedGroupsAsync(String subredditName)
+		{
+			return await UserLookup.GetDefaultBannedGroupsAsync();
 		}
 
 		internal async Task QuarantineOptInAsync(String subredditName)

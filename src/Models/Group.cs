@@ -8,6 +8,9 @@ namespace BotTerminator.Models
 	[JsonObject]
 	public class Group
 	{
+		[JsonProperty("actionByDefault")]
+		public bool ActionByDefault { get; private set; }
+
 		[JsonProperty("id", Required = Required.Always)]
 		public Guid Id { get; private set; }
 

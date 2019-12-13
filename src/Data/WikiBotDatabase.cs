@@ -1,8 +1,10 @@
 ﻿using BotTerminator.Configuration;
+using BotTerminator.Models;
 using Newtonsoft.Json;
 using RedditSharp;
 using RedditSharp.Things;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BotTerminator.Data
@@ -25,18 +27,19 @@ namespace BotTerminator.Data
 			this.SrWiki = sr.GetWiki;
 		}
 
-		public async Task<Boolean> CheckUserAsync(String name)
+		public async Task<IReadOnlyCollection<Group>> GetGroupsForUserAsync(String username)
 		{
-			if (IsStale)
-			{
-				await GetUpdatedListFromWikiAsync();
-				LastUpdatedAtUtc = DateTimeOffset.UtcNow;
-			}
-			throw new NotImplementedException();
-			//return Cache.Items.Contains(name);
+			await UpdateIfStaleAsync();
+			return Cache.GetGroupsByUser(username);
 		}
 
-		public async Task UpdateUserAsync(String name, Boolean value, Boolean force)
+		public async Task<Boolean> CheckUserAsync(String name, String group)
+		{
+			await UpdateIfStaleAsync();
+			return Cache.IsInGroup(group, name);
+		}
+
+		public async Task UpdateUserAsync(String name, String group, Boolean value, Boolean force)
 		{
 			if (value)
 			{
@@ -50,11 +53,37 @@ namespace BotTerminator.Data
 			}
 		}
 
+		private async Task UpdateIfStaleAsync()
+		{
+			if (IsStale)
+			{
+				try
+				{
+					await GetUpdatedListFromWikiAsync();
+					LastUpdatedAtUtc = DateTimeOffset.UtcNow;
+				}
+				catch (RedditHttpException ex)
+				{
+					Console.WriteLine("Failed to update cache: {0}", ex.Message);
+				}
+				catch (OperationCanceledException)
+				{
+					Console.WriteLine("Failed to update cache: timed out");
+				}
+			}
+		}
+
 		private async Task GetUpdatedListFromWikiAsync()
 		{
 			String mdData = (await SrWiki.GetPageAsync(pageName)).MarkdownContent;
 			Cache = JsonConvert.DeserializeObject<BanListConfig>(mdData);
 			Cache.ValidateSupportedVersion(2, 2);
+		}
+
+		public async Task<IReadOnlyCollection<Group>> GetDefaultBannedGroupsAsync()
+		{
+			await UpdateIfStaleAsync();
+			return Cache.GetDefaultActionedOnGroups();
 		}
 	}
 }
