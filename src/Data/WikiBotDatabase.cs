@@ -18,7 +18,7 @@ namespace BotTerminator.Data
 		private DateTimeOffset LastUpdatedAtUtc { get; set; } = DateTimeOffset.MinValue;
 
 		private static readonly TimeSpan staleTimeSpan = new TimeSpan(0, 10, 0);
-		public Boolean IsStale => Cache.Items.Count == 0 || DateTimeOffset.UtcNow - LastUpdatedAtUtc > staleTimeSpan;
+		public Boolean IsStale => Cache.Count == 0 || DateTimeOffset.UtcNow - LastUpdatedAtUtc > staleTimeSpan;
 
 		public WikiBotDatabase(Subreddit sr)
 		{
@@ -32,14 +32,16 @@ namespace BotTerminator.Data
 				await GetUpdatedListFromWikiAsync();
 				LastUpdatedAtUtc = DateTimeOffset.UtcNow;
 			}
-			return Cache.Items.Contains(name);
+			throw new NotImplementedException();
+			//return Cache.Items.Contains(name);
 		}
 
 		public async Task UpdateUserAsync(String name, Boolean value, Boolean force)
 		{
 			if (value)
 			{
-				Cache.Items.Add(name);
+				throw new NotImplementedException();
+				//Cache.Items.Add(name);
 			}
 			if (force || IsStale)
 			{
@@ -52,6 +54,7 @@ namespace BotTerminator.Data
 		{
 			String mdData = (await SrWiki.GetPageAsync(pageName)).MarkdownContent;
 			Cache = JsonConvert.DeserializeObject<BanListConfig>(mdData);
+			Cache.ValidateSupportedVersion(2, 2);
 		}
 	}
 }
