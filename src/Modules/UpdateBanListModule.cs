@@ -28,7 +28,7 @@ namespace BotTerminator.Modules
 
 		public override async Task TeardownAsync()
 		{
-			await bot.UserLookup.UpdateUserAsync(BotTerminator.CacheFreshenerUserName, false, true);
+			await bot.UserLookup.UpdateUserAsync(BotTerminator.CacheFreshenerUserName, String.Empty, false, true);
 		}
 
 		protected override async Task PostRunItemsAsync(ICollection<Post> subredditPosts)
@@ -54,7 +54,7 @@ namespace BotTerminator.Modules
 		{
 			// We don't need to even look at meta posts
 			if (subredditPost.LinkFlairText == "Meta") return;
-
+			String[] groups = subredditPost.LinkFlairCssClass.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 			/* 
 			 * We don't use the post.Url property here because if the Url is not a
 			 * well formed URI, RedditSharp throws an UriFormatException. The cases
@@ -64,7 +64,7 @@ namespace BotTerminator.Modules
 			if (match == null || match.Groups.Count != 2) return;
 			Console.WriteLine("Found new bot to ban " + match.Groups[1].Value);
 			String targetUserName = match.Groups[1].Value;
-			await bot.UserLookup.UpdateUserAsync(targetUserName, true, first);
+			//await bot.UserLookup.UpdateUserAsync(targetUserName, true, first);
 			first = false;
 		}
 	}

@@ -3,24 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BotTerminator.Configuration;
+using BotTerminator.Models;
 
 namespace BotTerminator.Data
 {
 	public class MemoryBotDatabase : IBotDatabase
 	{
-		private HashSet<String> Users { get; set; } = new HashSet<string>();
+		private BanListConfig Users { get; set; } = new BanListConfig();
+		public Task<Boolean> CheckUserAsync(String username, String groupName) => Task.FromResult(Users.IsInGroup(groupName, username));
 
-		public Task<Boolean> CheckUserAsync(String name) => Task.FromResult(Users.Contains(name));
+		public Task<IReadOnlyCollection<Group>> GetDefaultBannedGroupsAsync() => Task.FromResult(Users.GroupLookup.Where(group => group.Value.ActionByDefault).ToList() as IReadOnlyCollection<Group>);
 
-		public Task UpdateUserAsync(String name, Boolean value, Boolean force)
+		public Task<IReadOnlyCollection<Group>> GetGroupsForUserAsync(String username) => Task.FromResult(Users.GetGroupsByUser(username));
+
+		public Task UpdateUserAsync(String name, String groupName, Boolean value, Boolean force = false)
 		{
 			if (value)
 			{
-				Users.Add(name);
+				Users.GroupLookup[groupName].Members.Add(name);
 			}
 			else
 			{
-				Users.Remove(name);
+				Users.GroupLookup[groupName].Members.Remove(name);
 			}
 			return Task.CompletedTask;
 		}

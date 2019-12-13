@@ -5,6 +5,7 @@ using RedditSharp;
 using RedditSharp.Things;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,20 +35,23 @@ namespace BotTerminator.Modules
 
 		protected override sealed async Task RunItemAsync(T thing)
 		{
-			if (await bot.CheckShouldBanAsync(thing))
+			String subredditName = thing["subreddit"].Value<String>();
+			if (!bot.SubredditLookup.ContainsKey(subredditName))
 			{
-				String subredditName = thing["subreddit"].Value<String>();
-				if (!bot.SubredditLookup.ContainsKey(subredditName))
-				{
-					await bot.CacheSubredditAsync(subredditName);
-				}
-				CachedSubreddit subreddit = bot.SubredditLookup[subredditName];
-				AbstractSubredditOptionSet options = new ShadedOptionSet(new[] { subreddit?.Options, GlobalConfig.GlobalOptions }, true);
-				if (!options.Enabled) return;
+				await bot.CacheSubredditAsync(subredditName);
+			}
+			CachedSubreddit subreddit = bot.SubredditLookup[subredditName];
+			AbstractSubredditOptionSet options = new ShadedOptionSet(new[] { subreddit?.Options, GlobalConfig.GlobalOptions }, true);
+			if (!options.Enabled) return;
+			if (!options.ScanPosts && thing is Post) return;
+			if (!options.ScanComments && thing is Comment) return;
+
+			IReadOnlyCollection<Group> bannedGroups = await bot.GetBannedGroupsAsync(subreddit.Name);
+
+			if (await bot.CheckShouldBanAsync(thing, bannedGroups.Select(group => group.Name)))
+			{
 				try
 				{
-					if (!options.ScanPosts && thing is Post) return;
-					if (!options.ScanComments && thing is Comment) return;
 					if (options.RemovalType == RemovalType.Spam)
 					{
 						await thing.RemoveSpamAsync();

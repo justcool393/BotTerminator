@@ -18,13 +18,23 @@ namespace BotTerminator.Configuration
 		}
 
 		[JsonProperty("nonGroupFlairCssClasses", DefaultValueHandling = DefaultValueHandling.Populate)]
-		public IReadOnlyCollection<String> NonGroupFlairCssClasses = new String[0];
+		public IReadOnlyCollection<String> NonGroupFlairCssClasses = Array.Empty<String>();
 
 		[JsonProperty("groups")]
 		public Dictionary<String, Group> GroupLookup { get; set; }
 
 		[JsonIgnore]
 		public Int32 Count => GroupLookup.Values.Sum(group => group.Members.Count);
+
+		public IReadOnlyCollection<Group> GetDefaultActionedOnGroups()
+		{
+			return GroupLookup.Values.Where(group => group.ActionByDefault).ToArray();
+		}
+
+		public IReadOnlyCollection<Group> GetGroupsByUser(String username)
+		{
+			return GroupLookup.Values.Where(group => group.Members.Contains(username)).ToArray();
+		}
 
 		public bool IsInGroup(String groupCssClass, String username)
 		{

@@ -15,7 +15,7 @@ namespace BotTerminator.Modules
 
 		public override async Task RunOnceAsync()
 		{
-			await bot.UserLookup.UpdateUserAsync(BotTerminator.CacheFreshenerUserName, false);
+			await bot.UserLookup.UpdateUserAsync(BotTerminator.CacheFreshenerUserName, String.Empty, false);
 			await bot.UpdateSubredditCacheAsync();
 		}
 
