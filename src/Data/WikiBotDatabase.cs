@@ -27,6 +27,18 @@ namespace BotTerminator.Data
 			this.SrWiki = sr.GetWiki;
 		}
 
+		public async Task<BanListConfig> GetConfigAsync()
+		{
+			await UpdateIfStaleAsync();
+			return Cache;
+		}
+
+		public async Task<IReadOnlyDictionary<String, Group>> GetAllGroupsAsync()
+		{
+			await UpdateIfStaleAsync();
+			return Cache.GroupLookup;
+		}
+
 		public async Task<IReadOnlyCollection<Group>> GetGroupsForUserAsync(String username)
 		{
 			await UpdateIfStaleAsync();

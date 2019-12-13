@@ -26,6 +26,11 @@ namespace BotTerminator.Configuration
 		[JsonIgnore]
 		public Int32 Count => GroupLookup.Values.Sum(group => group.Members.Count);
 
+		public IEnumerable<String> GetAllNames()
+		{
+			return NonGroupFlairCssClasses.Concat(GroupLookup.Keys);
+		}
+
 		public IReadOnlyCollection<Group> GetDefaultActionedOnGroups()
 		{
 			return GroupLookup.Values.Where(group => group.ActionByDefault).ToArray();

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using BotTerminator.Configuration;
+using Newtonsoft.Json.Linq;
 using RedditSharp.Things;
 using System;
 using System.Collections.Generic;
@@ -47,14 +48,24 @@ namespace BotTerminator.Modules
 
 		protected override Boolean PreRunItem(Post subredditPost)
 		{
-			return !subredditPost.IsHidden && subredditPost.LinkFlairText != null && (subredditPost.LinkFlairText == "Banned" || subredditPost.LinkFlairText == "Meta");
+			String[] groups = GetGroupNames(subredditPost.LinkFlairCssClass);
+			// TODO: maybe add async override or something?
+			if (groups.Length == 0 || groups.Contains("await")) return false;
+			return !subredditPost.IsHidden && subredditPost.LinkFlairCssClass != null;
+		}
+
+		private String[] GetGroupNames(String linkFlairCssClass)
+		{
+			return linkFlairCssClass.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 		}
 
 		protected override async Task RunItemAsync(Post subredditPost)
 		{
 			// We don't need to even look at meta posts
-			if (subredditPost.LinkFlairText == "Meta") return;
-			String[] groups = subredditPost.LinkFlairCssClass.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			BanListConfig config = await bot.UserLookup.GetConfigAsync();
+
+			bool shouldIgnore = config.NonGroupFlairCssClasses.Contains(subredditPost.AuthorFlairCssClass);
+			if (shouldIgnore) return;
 			/* 
 			 * We don't use the post.Url property here because if the Url is not a
 			 * well formed URI, RedditSharp throws an UriFormatException. The cases

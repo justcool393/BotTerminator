@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BotTerminator.Configuration;
 using BotTerminator.Models;
 
 namespace BotTerminator.Data
@@ -10,6 +11,10 @@ namespace BotTerminator.Data
 	public class NullBotDatabase : IBotDatabase
 	{
 		public Task<Boolean> CheckUserAsync(String username, String groupName) => Task.FromResult(false);
+
+		public Task<BanListConfig> GetConfigAsync() => Task.FromResult(new BanListConfig());
+
+		public Task<IReadOnlyDictionary<String, Group>> GetAllGroupsAsync() => Task.FromResult<IReadOnlyDictionary<String, Group>>(new Dictionary<String, Group>());
 
 		public Task<IReadOnlyCollection<Group>> GetDefaultBannedGroupsAsync() => Task.FromResult(Array.Empty<Group>() as IReadOnlyCollection<Group>);
 
