@@ -36,8 +36,13 @@ namespace BotTerminator.Modules
 		{
 			if (await bot.CheckShouldBanAsync(thing))
 			{
-				CachedSubreddit subreddit = bot.SubredditLookup[thing["subreddit"].Value<String>()];
-				AbstractSubredditOptionSet options = new ShadedOptionSet(new[] { subreddit.Options, GlobalConfig.GlobalOptions }, true);
+				String subredditName = thing["subreddit"].Value<String>();
+				if (!bot.SubredditLookup.ContainsKey(subredditName))
+				{
+					await bot.CacheSubredditAsync(subredditName);
+				}
+				CachedSubreddit subreddit = bot.SubredditLookup[subredditName];
+				AbstractSubredditOptionSet options = new ShadedOptionSet(new[] { subreddit?.Options, GlobalConfig.GlobalOptions }, true);
 				if (!options.Enabled) return;
 				try
 				{

@@ -90,6 +90,11 @@ namespace BotTerminator
 			await Task.WhenAll(Modules.Select(s => s.RunForeverAsync()));
 		}
 
+		public async Task CacheSubredditAsync(String subredditName)
+		{
+			SubredditLookup[subredditName] = new CachedSubreddit(await RedditInstance.GetSubredditAsync(subredditName, false), configurationLoader);
+		}
+
 		public async Task UpdateSubredditCacheAsync()
 		{
 			ICollection<Subreddit> moderatedSubreddits = new List<Subreddit>();
@@ -120,12 +125,13 @@ namespace BotTerminator
 					SubredditLookup[subreddit.DisplayName] = new CachedSubreddit(subreddit, configurationLoader);
 				}
 			}
-			await Task.WhenAll(moderatedSubreddits.Select(subreddit => SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync()));
+			await Task.WhenAll(moderatedSubreddits.Select(subreddit => SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync(this)));
 		}
 
-		private bool IsConfigurable(Subreddit subreddit)
+		public bool IsConfigurable(Subreddit subreddit)
 		{
-			return !subreddit.DisplayName.Equals(AuthenticationConfig.SubredditName, StringComparison.InvariantCultureIgnoreCase) &&
+			return subreddit != null &&
+			       !subreddit.DisplayName.Equals(AuthenticationConfig.SubredditName, StringComparison.InvariantCultureIgnoreCase) &&
 			       subreddit.ModPermissions.HasFlag(ModeratorPermission.Wiki) &&
 				   subreddit["subreddit_type"].Value<String>() != "user";
 		}
