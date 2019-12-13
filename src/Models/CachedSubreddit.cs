@@ -44,9 +44,14 @@ namespace BotTerminator.Models
 			return (await RedditSubreddit.GetWiki.GetPageNamesAsync()).Contains(pageName.ToLowerInvariant());
 		}
 
-		public async Task ReloadOptionsAsync()
+		public async Task ReloadOptionsAsync(BotTerminator bot)
 		{
 			// TODO: check permissions
+			if (!bot.IsConfigurable(RedditSubreddit))
+			{
+				SubredditConfig = new SubredditConfig();
+				return;
+			}
 			try
 			{
 				// catching the 404 here instead of an if check uses less requests and as such will be quicker
