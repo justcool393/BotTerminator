@@ -92,7 +92,13 @@ namespace BotTerminator
 
 		public async Task CacheSubredditAsync(String subredditName)
 		{
-			SubredditLookup[subredditName] = new CachedSubreddit(await RedditInstance.GetSubredditAsync(subredditName, false), configurationLoader);
+			Subreddit subreddit = null;
+			// we have to do it this way, otherwise ModPermissions won't be set
+			await RedditInstance.User.GetModeratorSubreddits(-1).ForEachAsync(moderatedSubreddit =>
+			{
+				if (moderatedSubreddit.DisplayName == SubredditName) subreddit = moderatedSubreddit; 
+			});
+			SubredditLookup[subredditName] = new CachedSubreddit(subreddit, configurationLoader);
 			await SubredditLookup[subredditName].ReloadOptionsAsync(this);
 		}
 
@@ -120,11 +126,11 @@ namespace BotTerminator
 						}
 					}
 					
-				}
+				}/*
 				else
 				{
-					SubredditLookup[subreddit.DisplayName] = new CachedSubreddit(subreddit, configurationLoader);
-				}
+					await SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync(this);
+				}*/
 			}
 			await Task.WhenAll(moderatedSubreddits.Select(subreddit => SubredditLookup[subreddit.DisplayName].ReloadOptionsAsync(this)));
 		}

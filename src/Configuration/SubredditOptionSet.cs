@@ -44,7 +44,7 @@ namespace BotTerminator.Configuration
 
 		public override IEnumerable<String> IgnoredUsers { get; set; } = new List<String>(0);
 
-		public override IEnumerable<String> ActionedUserTypes { get; set; } = new List<String>(0);
+		public override IEnumerable<String> ActionedUserTypes { get; set; }
 
 		public override RemovalType RemovalType { get; set; } = RemovalType.Spam;
 	}

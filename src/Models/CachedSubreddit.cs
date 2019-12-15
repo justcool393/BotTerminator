@@ -39,7 +39,7 @@ namespace BotTerminator.Models
 
 		private async Task<SubredditConfig> ReadConfigFromWikiAsync()
 		{
-			SubredditConfig config = await ConfigurationLoader.LoadConfigAsync((await RedditSubreddit.GetWiki.GetPageAsync(pageName)).MarkdownContent);
+			SubredditConfig config = await ConfigurationLoader.LoadConfigAsync((await RedditSubreddit.GetWiki.GetPageAsync(pageName.ToLowerInvariant())).MarkdownContent);
 			config.ValidateSupportedVersion(minSupportedVersion, maxSupportedVersion);
 			return config;
 		}
