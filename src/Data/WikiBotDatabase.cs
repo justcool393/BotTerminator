@@ -66,7 +66,7 @@ namespace BotTerminator.Data
 			}
 			if (force || IsStale)
 			{
-				await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(Cache));
+				await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(Cache, Formatting.Indented));
 				LastUpdatedAtUtc = DateTimeOffset.UtcNow;
 			}
 		}
