@@ -18,7 +18,7 @@ namespace BotTerminator.Configuration
 		}
 
 		[JsonProperty("nonGroupFlairCssClasses", DefaultValueHandling = DefaultValueHandling.Populate)]
-		public IReadOnlyCollection<String> NonGroupFlairCssClasses = Array.Empty<String>();
+		public IReadOnlyCollection<String> NonGroupFlairCssClasses { get; set; } = Array.Empty<String>();
 
 		[JsonProperty("groups")]
 		public Dictionary<String, Group> GroupLookup { get; set; } = new Dictionary<string, Group>();
