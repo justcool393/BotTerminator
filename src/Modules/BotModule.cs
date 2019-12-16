@@ -34,8 +34,7 @@ namespace BotTerminator.Modules
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine("Module {0} failed to run due to {1}: {2}", GetType().Name, ex.GetType().Name, ex.Message);
-					Console.WriteLine(ex.ToString());
+					Log.Error(ex, "Module {ModuleTypeName} failed to run due to {ExceptionType}: {ExceptionMessage}", GetType().Name, ex.GetType().Name, ex.Message);
 				}
 				if (RunForeverCooldown.Ticks > 0)
 				{

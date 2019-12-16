@@ -58,6 +58,7 @@ namespace BotTerminator
 
 		public async Task StartAsync()
 		{
+			Log.Information("Starting BotTerminator");
 			Wiki subredditWiki = (await RedditInstance.GetSubredditAsync(SubredditName, false)).GetWiki;
 			try
 			{
@@ -75,7 +76,7 @@ namespace BotTerminator
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine("Failed to load or create subreddit config: " + ex.Message);
+				Log.Warning("Failed to load or create subreddit configuration for {SubredditName}: {ExceptionMessage}", SubredditName, ex.Message);
 				return;
 			}
 			UserLookup = new WikiBotDatabase(await RedditInstance.GetSubredditAsync(SubredditName, false));
@@ -125,7 +126,7 @@ namespace BotTerminator
 						}
 						catch (RedditHttpException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
 						{
-							Console.WriteLine("Failed to create configuration for subreddit /r/{0}: forbidden", subreddit.DisplayName);
+							Log.Warning("Failed to create configuration for subreddit /r/{SubredditName}: {Reason}", subreddit.DisplayName, ex.StatusCode.ToString());
 						}
 					}
 					

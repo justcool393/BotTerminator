@@ -14,7 +14,7 @@ namespace BotTerminator.Modules
 
 		public override Task SetupAsync()
 		{
-			Console.WriteLine("Starting removed post scanner module");
+			Log.Information("Starting removed post scanner module");
 			return Task.CompletedTask;
 		}
 	}
