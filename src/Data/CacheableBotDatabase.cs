@@ -75,7 +75,7 @@ namespace BotTerminator.Data
 					Users.GroupLookup[groupName].Members.Remove(username);
 				}
 			}
-			await UpdateIfStaleAsync(force: force);
+			await UpdateIfStaleAsync(false, force);
 		}
 
 		public async Task WriteConfigAsync(BanListConfig config, Boolean force)
