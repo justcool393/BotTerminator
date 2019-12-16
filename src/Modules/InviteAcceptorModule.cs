@@ -64,7 +64,7 @@ namespace BotTerminator.Modules
 				try
 				{
 					await (await RedditInstance.GetSubredditAsync(subredditName, false)).AcceptModeratorInviteAsync();
-					Console.WriteLine("Accepted moderator invite to /r/{0}", subredditName);
+					Log.Information("Accepted moderator invite to {Subreddit}", "/r/" + subredditName);
 				}
 				catch (RedditHttpException ex)
 				{
@@ -72,7 +72,7 @@ namespace BotTerminator.Modules
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine("Failed to accept moderator invite for subreddit /r/{0}: {1}", subredditName, ex.Message);
+					Log.Error("Failed to accept moderator invite for subreddit {Subreddit}: {ExceptionMessage}", "/r/" + subredditName, ex.Message);
 				}
 			}
 			else if (privateMessage.Subject == moderatorAddSubject) // these messages aren't sent as a subreddit
@@ -101,7 +101,7 @@ namespace BotTerminator.Modules
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine("Failed to mark message {0} as read: {1}", privateMessage.FullName, ex.Message);
+					Log.Warning("Failed to mark message {MessageFullName} as read: {ExceptionMessage}", privateMessage.FullName, ex.Message);
 				}
 			}
 		}
@@ -114,12 +114,12 @@ namespace BotTerminator.Modules
 				try
 				{
 					await bot.QuarantineOptInAsync(subredditName);
-					Console.WriteLine("Opted in to the quarantine for subreddit /r/{0}", subredditName);
+					Log.Information("Opted in to the quarantine for subreddit {Subreddit}", "/r/" + subredditName);
 					return true;
 				}
 				catch (Exception subException)
 				{
-					Console.WriteLine("Failed to opt in to the quarantine (if it exists): {0}", subException.Message);
+					Log.Error(subException, "Failed to opt in to the quarantine for subreddit {Subreddit} (if it exists): {ExceptionMessage}", subredditName, subException.Message);
 				}
 			}
 			return false;
