@@ -35,14 +35,18 @@ namespace BotTerminator.Modules
 		protected override async Task PostRunItemsAsync(ICollection<Post> subredditPosts)
 		{
 			// hide all of them at once
+			BanListConfig config = await bot.UserLookup.GetConfigAsync();
+			ICollection<Post> hideable = subredditPosts.Where(post => config.ShouldHide(post)).ToList();
 			if (subredditPosts.Count > 0)
 			{
 				const String requestVerb = "POST";
-				for (int i = 0; i < subredditPosts.Count; i += 25)
+				IList<Task> tasks = new List<Task>();
+				for (int i = 0; i < hideable.Count; i += 25)
 				{
-					String formattedUrl = String.Format("{0}?id={1}", BotTerminator.HideUrl, String.Join(",", subredditPosts.Select(s => s.FullName).Skip(i).Take(25)));
-					await bot.WebAgent.ExecuteRequestAsync(() => bot.WebAgent.CreateRequest(formattedUrl, requestVerb));
+					String formattedUrl = String.Format("{0}?id={1}", BotTerminator.HideUrl, String.Join(",", subredditPosts.Select(post => post.FullName).Skip(i).Take(25)));
+					tasks.Add(bot.WebAgent.ExecuteRequestAsync(() => bot.WebAgent.CreateRequest(formattedUrl, requestVerb)));
 				}
+				await Task.WhenAll(tasks);
 			}
 		}
 
