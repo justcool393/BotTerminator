@@ -9,9 +9,10 @@ namespace BotTerminator.Data
 	{
 		private IBotDatabase Database { get; set; }
 
-		public CacheableBackedBotDatabase(IBotDatabase database)
+		public CacheableBackedBotDatabase(IBotDatabase database, TimeSpan ttl)
 		{
 			this.Database = database;
+			this.Ttl = ttl;
 		}
 
 		protected override async Task UpdateAsync()
