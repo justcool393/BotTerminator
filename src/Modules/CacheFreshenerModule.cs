@@ -21,7 +21,7 @@ namespace BotTerminator.Modules
 
 		public override Task SetupAsync()
 		{
-			Console.WriteLine("Start cache freshener module");
+			Log.Information("Starting cache freshener module");
 			return Task.CompletedTask;
 		}
 

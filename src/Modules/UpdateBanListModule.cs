@@ -23,7 +23,7 @@ namespace BotTerminator.Modules
 
 		public override Task SetupAsync()
 		{
-			Console.WriteLine("Starting update ban list module");
+			Log.Information("Starting update ban list module");
 			return Task.CompletedTask;
 		}
 
@@ -75,7 +75,7 @@ namespace BotTerminator.Modules
 			 */
 			Match match = usernameRegex.Match(subredditPost["url"].Value<String>().Trim());
 			if (match == null || match.Groups.Count != 2) return;
-			Console.WriteLine("Found new bot to ban " + match.Groups[1].Value);
+			Log.Information("Processing user {BotUsername}", match.Groups[1].Value);
 			String targetUserName = match.Groups[1].Value;
 			foreach (String group in groups)
 			{

@@ -73,6 +73,7 @@ namespace BotTerminator.Data
 
 		private async Task UpdateIfStaleAsync()
 		{
+#warning Using Console.WriteLine for logging here is deprecated
 			if (IsStale)
 			{
 				try

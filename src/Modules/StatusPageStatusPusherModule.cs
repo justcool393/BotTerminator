@@ -37,7 +37,7 @@ namespace BotTerminator.Modules
 					}
 					catch (Exception ex) when (ex is HttpRequestException || ex is OperationCanceledException)
 					{
-						Console.WriteLine("Failed to push to StatusPage (try {0}/{1}): {2}", retry, MaxRetryValue, ex.Message);
+						Log.Error(ex, "Failed to push to status page (try {Retry}/{MaxRetryValue}: {ExceptionMessage}", retry, MaxRetryValue, ex.Message);
 					}
 					finally
 					{
@@ -50,7 +50,7 @@ namespace BotTerminator.Modules
 
 		public override Task SetupAsync()
 		{
-			Console.WriteLine("Starting StatusPage pusher");
+			Log.Information("Starting StatusPage pusher");
 			return Task.CompletedTask;
 		}
 

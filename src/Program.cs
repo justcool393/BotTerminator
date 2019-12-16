@@ -29,7 +29,7 @@ namespace BotTerminator
 				Console.WriteLine(ex);
 				return;
 			}
-			Console.WriteLine("Loading configuration file...");
+			log.Information("Loading configuration file...");
 			String fileName = args.Length != 0 ? args[0] : defaultFileName;
 			AuthenticationConfig config = LoadConfigJsonFlatfile(fileName);
 			config.ValidateSupportedVersion(minSupportedAuthConfigVersion, maxSupportedAuthConfigVersion);
@@ -38,7 +38,6 @@ namespace BotTerminator
 				//UserAgent = "BotTerminator v1.0.0.0 - /r/" + config.SrName,
 			};
 			Reddit r = new Reddit(botWebAgent, true);
-			Console.WriteLine("Starting BotTerminator...");
 			BotTerminator terminator = new BotTerminator(botWebAgent, r, config, log);
 			terminator.StartAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 		}

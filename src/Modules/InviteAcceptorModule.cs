@@ -31,7 +31,7 @@ namespace BotTerminator.Modules
 
 		public override Task SetupAsync()
 		{
-			Console.WriteLine("Starting invite acceptor module");
+			Log.Information("Starting invite acceptor module");
 			return Task.CompletedTask;
 		}
 

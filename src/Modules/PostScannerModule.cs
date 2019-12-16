@@ -13,7 +13,7 @@ namespace BotTerminator.Modules
 
 		public override Task SetupAsync()
 		{
-			Console.WriteLine("Starting post scanner module");
+			Log.Information("Starting post scanner module");
 			return Task.CompletedTask;
 		}
 	}
