@@ -16,20 +16,23 @@ namespace BotTerminator.Data
 		protected TimeSpan Ttl { get; set; } = TimeSpan.MaxValue;
 		public Boolean IsStale => DateTimeOffset.UtcNow - LastUpdated > Ttl;
 
-		protected async Task UpdateIfStaleAsync()
+		protected async Task UpdateIfStaleAsync(bool read = true, bool force = false)
 		{
-			if (IsStale)
+			if (force || IsStale)
 			{
-				await UpdateAsync();
+				if (read)
+				{
+					await ReadNoncachedAsync();
+				}
+				else
+				{
+					await FlushAsync();
+				}
 				LastUpdated = DateTimeOffset.UtcNow;
 			}
 		}
 
-		protected abstract Task UpdateAsync();
-
-		protected abstract Task UpdateUserAsync(String username, String groupName, Boolean value);
-
-		public async Task<BanListConfig> GetConfigAsync()
+		public async Task<BanListConfig> ReadConfigAsync()
 		{
 			await UpdateIfStaleAsync();
 			return Users;
@@ -72,11 +75,16 @@ namespace BotTerminator.Data
 					Users.GroupLookup[groupName].Members.Remove(username);
 				}
 			}
-			if (force || IsStale)
-			{
-				await UpdateUserAsync(username, groupName, value);
-				LastUpdated = DateTimeOffset.UtcNow;
-			}
+			await UpdateIfStaleAsync(force: force);
 		}
+
+		public async Task WriteConfigAsync(BanListConfig config, Boolean force)
+		{
+			await UpdateIfStaleAsync(false, force);
+		}
+
+		protected abstract Task ReadNoncachedAsync();
+
+		protected abstract Task FlushAsync();
 	}
 }

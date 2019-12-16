@@ -10,8 +10,8 @@ namespace BotTerminator.Data
 {
 	public class MemoryBotDatabase : CacheableBotDatabase
 	{
-		protected override Task UpdateAsync() => Task.CompletedTask;
+		protected override Task FlushAsync() => Task.CompletedTask;
 
-		protected override Task UpdateUserAsync(String username, String groupName, Boolean value) => Task.CompletedTask;
+		protected override Task ReadNoncachedAsync() => Task.CompletedTask;
 	}
 }

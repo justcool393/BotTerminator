@@ -10,7 +10,7 @@ namespace BotTerminator.Data
 {
 	public interface IBotDatabase
 	{
-		Task<BanListConfig> GetConfigAsync();
+		Task<BanListConfig> ReadConfigAsync();
 
 		Task<IReadOnlyDictionary<String, Group>> GetAllGroupsAsync();
 
@@ -21,5 +21,7 @@ namespace BotTerminator.Data
 		Task<bool> CheckUserAsync(String username, String groupName);
 
 		Task UpdateUserAsync(String username, String groupName, Boolean value, Boolean force = false);
+
+		Task WriteConfigAsync(BanListConfig config, Boolean force = false);
 	}
 }

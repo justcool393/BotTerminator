@@ -20,7 +20,7 @@ namespace BotTerminator.Data
 			this.SrWiki = sr.GetWiki;
 		}
 
-		public async Task<BanListConfig> GetConfigAsync()
+		public async Task<BanListConfig> ReadConfigAsync()
 		{
 			String mdData = (await SrWiki.GetPageAsync(pageName)).MarkdownContent;
 			BanListConfig config = JsonConvert.DeserializeObject<BanListConfig>(mdData);
@@ -30,22 +30,22 @@ namespace BotTerminator.Data
 
 		public async Task<IReadOnlyDictionary<String, Group>> GetAllGroupsAsync()
 		{
-			return (await GetConfigAsync()).GroupLookup;
+			return (await ReadConfigAsync()).GroupLookup;
 		}
 
 		public async Task<IReadOnlyCollection<Group>> GetGroupsForUserAsync(String username)
 		{
-			return (await GetConfigAsync()).GetGroupsByUser(username);
+			return (await ReadConfigAsync()).GetGroupsByUser(username);
 		}
 
 		public async Task<Boolean> CheckUserAsync(String name, String group)
 		{
-			return (await GetConfigAsync()).IsInGroup(group, name);
+			return (await ReadConfigAsync()).IsInGroup(group, name);
 		}
 
 		public async Task UpdateUserAsync(String name, String group, Boolean value, Boolean force)
 		{
-			BanListConfig config = await GetConfigAsync();
+			BanListConfig config = await ReadConfigAsync();
 			if (config.GroupLookup.ContainsKey(group))
 			{
 				if (value)
@@ -57,15 +57,17 @@ namespace BotTerminator.Data
 					config.GroupLookup[group].Members.Remove(name);
 				}
 			}
-			if (force)
-			{
-				await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(config, Formatting.Indented));
-			}
+			await WriteConfigAsync(config, force);
+		}
+
+		public async Task WriteConfigAsync(BanListConfig config, bool force)
+		{
+			await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(config, Formatting.Indented));
 		}
 
 		public async Task<IReadOnlyCollection<Group>> GetDefaultBannedGroupsAsync()
 		{
-			return (await GetConfigAsync()).GetDefaultActionedOnGroups();
+			return (await ReadConfigAsync()).GetDefaultActionedOnGroups();
 		}
 	}
 }
