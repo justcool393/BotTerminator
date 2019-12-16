@@ -35,7 +35,7 @@ namespace BotTerminator.Modules
 		protected override async Task PostRunItemsAsync(ICollection<Post> subredditPosts)
 		{
 			// hide all of them at once
-			BanListConfig config = await bot.UserLookup.GetConfigAsync();
+			BanListConfig config = await bot.UserLookup.ReadConfigAsync();
 			ICollection<Post> hideable = subredditPosts.Where(post => config.ShouldHide(post)).ToList();
 			if (subredditPosts.Count > 0)
 			{
@@ -66,7 +66,7 @@ namespace BotTerminator.Modules
 		protected override async Task RunItemAsync(Post subredditPost)
 		{
 			// We don't need to even look at meta posts
-			BanListConfig config = await bot.UserLookup.GetConfigAsync();
+			BanListConfig config = await bot.UserLookup.ReadConfigAsync();
 			IEnumerable<String> groups = GetGroupNames(subredditPost.LinkFlairCssClass).Where(group => !config.NonGroupFlairCssClasses.Contains(group));
 			/* 
 			 * We don't use the post.Url property here because if the Url is not a

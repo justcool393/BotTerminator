@@ -25,7 +25,7 @@ namespace BotTerminator.Data
 			throw new NotImplementedException();
 		}
 
-		public Task<BanListConfig> GetConfigAsync()
+		public Task<BanListConfig> ReadConfigAsync()
 		{
 			throw new NotImplementedException();
 		}
@@ -46,6 +46,11 @@ namespace BotTerminator.Data
 		}
 
 		public Task UpdateUserAsync(String username, String groupName, Boolean value, Boolean force = false)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task WriteConfigAsync(BanListConfig config, Boolean force = false)
 		{
 			throw new NotImplementedException();
 		}

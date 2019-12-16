@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using BotTerminator.Configuration;
 
 namespace BotTerminator.Data
 {
@@ -15,14 +16,14 @@ namespace BotTerminator.Data
 			this.Ttl = ttl;
 		}
 
-		protected override async Task UpdateAsync()
+		protected override async Task ReadNoncachedAsync()
 		{
-			Users = await Database.GetConfigAsync();
+			Users = await Database.ReadConfigAsync();
 		}
 
-		protected override async Task UpdateUserAsync(String username, String groupName, Boolean value)
+		protected override async Task FlushAsync()
 		{
-			await Database.UpdateUserAsync(username, groupName, value, true);
+			await Database.WriteConfigAsync(Users, true);
 		}
 	}
 }

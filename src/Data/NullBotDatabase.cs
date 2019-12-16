@@ -12,7 +12,9 @@ namespace BotTerminator.Data
 	{
 		public Task<Boolean> CheckUserAsync(String username, String groupName) => Task.FromResult(false);
 
-		public Task<BanListConfig> GetConfigAsync() => Task.FromResult(new BanListConfig());
+		public Task<BanListConfig> ReadConfigAsync() => Task.FromResult(new BanListConfig());
+
+		public Task WriteConfigAsync(BanListConfig config, bool force) => Task.CompletedTask;
 
 		public Task<IReadOnlyDictionary<String, Group>> GetAllGroupsAsync() => Task.FromResult<IReadOnlyDictionary<String, Group>>(new Dictionary<String, Group>());
 
