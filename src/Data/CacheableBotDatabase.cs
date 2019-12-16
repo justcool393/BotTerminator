@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BotTerminator.Data
 {
-	public abstract class CacheableDatabase : IBotDatabase
+	public abstract class CacheableBotDatabase : IBotDatabase
 	{
 		protected BanListConfig Users { get; set; }
 
@@ -61,12 +61,22 @@ namespace BotTerminator.Data
 
 		public async Task UpdateUserAsync(String username, String groupName, Boolean value, Boolean force = false)
 		{
+			if (Users.GroupLookup.ContainsKey(groupName))
+			{
+				if (value)
+				{
+					Users.GroupLookup[groupName].Members.Add(username);
+				}
+				else
+				{
+					Users.GroupLookup[groupName].Members.Remove(username);
+				}
+			}
 			if (force || IsStale)
 			{
 				await UpdateUserAsync(username, groupName, value);
 				LastUpdated = DateTimeOffset.UtcNow;
 			}
-			throw new NotImplementedException();
 		}
 	}
 }

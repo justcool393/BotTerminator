@@ -15,13 +15,6 @@ namespace BotTerminator.Data
 
 		private Wiki SrWiki { get; set; }
 
-		private BanListConfig Cache { get; set; } = new BanListConfig();
-
-		private DateTimeOffset LastUpdatedAtUtc { get; set; } = DateTimeOffset.MinValue;
-
-		private static readonly TimeSpan staleTimeSpan = new TimeSpan(0, 10, 0);
-		public Boolean IsStale => Cache.Count == 0 || DateTimeOffset.UtcNow - LastUpdatedAtUtc > staleTimeSpan;
-
 		public WikiBotDatabase(Subreddit sr)
 		{
 			this.SrWiki = sr.GetWiki;
@@ -29,80 +22,50 @@ namespace BotTerminator.Data
 
 		public async Task<BanListConfig> GetConfigAsync()
 		{
-			await UpdateIfStaleAsync();
-			return Cache;
+			String mdData = (await SrWiki.GetPageAsync(pageName)).MarkdownContent;
+			BanListConfig config = JsonConvert.DeserializeObject<BanListConfig>(mdData);
+			config.ValidateSupportedVersion(2, 2);
+			return config;
 		}
 
 		public async Task<IReadOnlyDictionary<String, Group>> GetAllGroupsAsync()
 		{
-			await UpdateIfStaleAsync();
-			return Cache.GroupLookup;
+			return (await GetConfigAsync()).GroupLookup;
 		}
 
 		public async Task<IReadOnlyCollection<Group>> GetGroupsForUserAsync(String username)
 		{
-			await UpdateIfStaleAsync();
-			return Cache.GetGroupsByUser(username);
+			return (await GetConfigAsync()).GetGroupsByUser(username);
 		}
 
 		public async Task<Boolean> CheckUserAsync(String name, String group)
 		{
-			await UpdateIfStaleAsync();
-			return Cache.IsInGroup(group, name);
+			return (await GetConfigAsync()).IsInGroup(group, name);
 		}
 
 		public async Task UpdateUserAsync(String name, String group, Boolean value, Boolean force)
 		{
-			if (Cache.GroupLookup.ContainsKey(group))
+			BanListConfig config = await GetConfigAsync();
+			if (config.GroupLookup.ContainsKey(group))
 			{
 				if (value)
 				{
-					Cache.GroupLookup[group].Members.Add(name);
+					config.GroupLookup[group].Members.Add(name);
 				}
 				else
 				{
-					Cache.GroupLookup[group].Members.Remove(name);
+					config.GroupLookup[group].Members.Remove(name);
 				}
 			}
-			if (force || IsStale)
+			if (force)
 			{
-				await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(Cache, Formatting.Indented));
-				LastUpdatedAtUtc = DateTimeOffset.UtcNow;
+				await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(config, Formatting.Indented));
 			}
-		}
-
-		private async Task UpdateIfStaleAsync()
-		{
-#warning Using Console.WriteLine for logging here is deprecated
-			if (IsStale)
-			{
-				try
-				{
-					await GetUpdatedListFromWikiAsync();
-					LastUpdatedAtUtc = DateTimeOffset.UtcNow;
-				}
-				catch (RedditHttpException ex)
-				{
-					Console.WriteLine("Failed to update cache: {0}", ex.Message);
-				}
-				catch (OperationCanceledException)
-				{
-					Console.WriteLine("Failed to update cache: timed out");
-				}
-			}
-		}
-
-		private async Task GetUpdatedListFromWikiAsync()
-		{
-			String mdData = (await SrWiki.GetPageAsync(pageName)).MarkdownContent;
-			Cache = JsonConvert.DeserializeObject<BanListConfig>(mdData);
-			Cache.ValidateSupportedVersion(2, 2);
 		}
 
 		public async Task<IReadOnlyCollection<Group>> GetDefaultBannedGroupsAsync()
 		{
-			await UpdateIfStaleAsync();
-			return Cache.GetDefaultActionedOnGroups();
+			return (await GetConfigAsync()).GetDefaultActionedOnGroups();
 		}
 	}
 }

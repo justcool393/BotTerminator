@@ -79,7 +79,7 @@ namespace BotTerminator
 				Log.Warning("Failed to load or create subreddit configuration for {SubredditName}: {ExceptionMessage}", SubredditName, ex.Message);
 				return;
 			}
-			UserLookup = new WikiBotDatabase(await RedditInstance.GetSubredditAsync(SubredditName, false));
+			UserLookup = new CacheableBackedBotDatabase(new WikiBotDatabase(await RedditInstance.GetSubredditAsync(SubredditName, false)));
 			await UserLookup.CheckUserAsync(CacheFreshenerUserName, String.Empty);
 			await UpdateSubredditCacheAsync();
 
