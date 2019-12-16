@@ -1,6 +1,7 @@
 ﻿using BotTerminator.Configuration;
 using Newtonsoft.Json;
 using RedditSharp;
+using Serilog;
 using System;
 using System.IO;
 
@@ -11,9 +12,23 @@ namespace BotTerminator
 		private const int minSupportedAuthConfigVersion = 1;
 		private const int maxSupportedAuthConfigVersion = 1;
 		private const String defaultFileName = "config.json";
+		private const String defaultLogFileName = "BotTerminator_{Date}.log";
 
 		public static void Main(string[] args)
 		{
+			String logFileName = args.Length > 1 ? args[1] : defaultLogFileName;
+			Console.WriteLine("Loading logging...");
+			ILogger log;
+			try
+			{
+				log = LoadLogConfig(logFileName);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Failed to load log. Cannot continue.");
+				Console.WriteLine(ex);
+				return;
+			}
 			Console.WriteLine("Loading configuration file...");
 			String fileName = args.Length != 0 ? args[0] : defaultFileName;
 			AuthenticationConfig config = LoadConfigJsonFlatfile(fileName);
@@ -24,8 +39,17 @@ namespace BotTerminator
 			};
 			Reddit r = new Reddit(botWebAgent, true);
 			Console.WriteLine("Starting BotTerminator...");
-			BotTerminator terminator = new BotTerminator(botWebAgent, r, config);
+			BotTerminator terminator = new BotTerminator(botWebAgent, r, config, log);
 			terminator.StartAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+		}
+
+		private static ILogger LoadLogConfig(String logFileName = defaultLogFileName)
+		{
+			return new LoggerConfiguration()
+				   .MinimumLevel.Debug()
+				   .WriteTo.Console()
+				   .WriteTo.RollingFile(logFileName, retainedFileCountLimit: null)
+				   .CreateLogger();
 		}
 
 		private static AuthenticationConfig LoadConfigJsonFlatfile(String configFileName = defaultFileName)

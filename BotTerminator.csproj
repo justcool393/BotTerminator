@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="RedditSharp" Version="2.0.0-CI00076" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0-dev-00834" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.1-dev-00771" />
   </ItemGroup>
 
 </Project>

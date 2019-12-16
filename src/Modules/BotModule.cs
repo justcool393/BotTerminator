@@ -1,5 +1,6 @@
 ﻿using BotTerminator.Configuration;
 using RedditSharp;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace BotTerminator.Modules
 
 		protected GlobalConfig GlobalConfig => bot.GlobalConfig;
 		protected Reddit RedditInstance => bot.RedditInstance;
+		protected ILogger Log => bot.Log;
 		protected TimeSpan RunForeverCooldown { get; set; } = new TimeSpan(0, 0, 30);
 
 		protected BotModule(BotTerminator bot)

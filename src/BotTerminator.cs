@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RedditSharp;
 using RedditSharp.Things;
+using Serilog;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -36,6 +37,7 @@ namespace BotTerminator
 		public const String QuarantineOptInUrl = "/api/quarantine";
 
 		internal ConcurrentQueue<Func<HttpRequestMessage>> StatusPageQueue { get; private set; }
+		public ILogger Log { get; }
 		internal AuthenticationConfig AuthenticationConfig { get; private set; }
 		internal GlobalConfig GlobalConfig { get; private set; }
 		internal Reddit RedditInstance { get; private set; }
@@ -45,12 +47,13 @@ namespace BotTerminator
 		public IBotDatabase UserLookup { get; private set; }
 		internal IWebAgent WebAgent { get; private set; }
 
-		public BotTerminator(IWebAgent webAgent, Reddit redditInstance, AuthenticationConfig authenticationConfig)
+		public BotTerminator(IWebAgent webAgent, Reddit redditInstance, AuthenticationConfig authenticationConfig, ILogger log)
 		{
 			this.WebAgent = webAgent;
 			this.RedditInstance = redditInstance;
 			this.AuthenticationConfig = authenticationConfig;
 			this.StatusPageQueue = new ConcurrentQueue<Func<HttpRequestMessage>>();
+			this.Log = log;
 		}
 
 		public async Task StartAsync()
