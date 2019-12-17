@@ -35,6 +35,7 @@ namespace BotTerminator
 		public const String ModRemovedUrl = "/r/mod/about/spam?only=links";
 		public const Int32 PageLimit = 100;
 		public const String QuarantineOptInUrl = "/api/quarantine";
+		public const String UsersPageName = "botconfig/botterminator/users";
 
 		internal ConcurrentQueue<Func<HttpRequestMessage>> StatusPageQueue { get; private set; }
 		public ILogger Log { get; }
@@ -79,7 +80,7 @@ namespace BotTerminator
 				Log.Warning("Failed to load or create subreddit configuration for {SubredditName}: {ExceptionMessage}", SubredditName, ex.Message);
 				return;
 			}
-			UserLookup = new CacheableBackedBotDatabase(new WikiBotDatabase(await RedditInstance.GetSubredditAsync(SubredditName, false)), new TimeSpan(0, 5, 0));
+			UserLookup = new CacheableBackedBotDatabase(new SplittableWikiBotDatabase((await RedditInstance.GetSubredditAsync(SubredditName, false)).GetWiki, UsersPageName), new TimeSpan(0, 5, 0));
 			await UserLookup.CheckUserAsync(CacheFreshenerUserName, String.Empty);
 			await UpdateSubredditCacheAsync();
 
