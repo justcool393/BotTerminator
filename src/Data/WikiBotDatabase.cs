@@ -9,24 +9,25 @@ using System.Threading.Tasks;
 
 namespace BotTerminator.Data
 {
-	public class WikiBotDatabase : IBotDatabase
+	public abstract class WikiBotDatabase : IBotDatabase
 	{
-		private const String pageName = "botconfig/botterminator/banned";
+		/// <summary>
+		/// Maximum wiki page size on Reddit. This information is source from
+		/// <a href="https://github.com/reddit-archive/reddit/blob/master/r2/example.ini#L484">GitHub</a>.
+		/// </summary>
+		protected const Int32 WikiPageMaxSize = 256 * 1024;
 
-		private Wiki SrWiki { get; set; }
+		protected Wiki SubredditWiki { get; private set; }
+		protected String PageName { get; private set; }
 
-		public WikiBotDatabase(Subreddit sr)
+		protected WikiBotDatabase(Wiki wiki, String pageName)
 		{
-			this.SrWiki = sr.GetWiki;
+			this.SubredditWiki = wiki;
 		}
 
-		public async Task<BanListConfig> ReadConfigAsync()
-		{
-			String mdData = (await SrWiki.GetPageAsync(pageName)).MarkdownContent;
-			BanListConfig config = JsonConvert.DeserializeObject<BanListConfig>(mdData);
-			config.ValidateSupportedVersion(2, 2);
-			return config;
-		}
+		public abstract Task<BanListConfig> ReadConfigAsync();
+
+		public abstract Task WriteConfigAsync(BanListConfig config, bool force);
 
 		public async Task<IReadOnlyDictionary<String, Group>> GetAllGroupsAsync()
 		{
@@ -58,11 +59,6 @@ namespace BotTerminator.Data
 				}
 			}
 			await WriteConfigAsync(config, force);
-		}
-
-		public async Task WriteConfigAsync(BanListConfig config, bool force)
-		{
-			await SrWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(config, Formatting.Indented));
 		}
 
 		public async Task<IReadOnlyCollection<Group>> GetDefaultBannedGroupsAsync()
