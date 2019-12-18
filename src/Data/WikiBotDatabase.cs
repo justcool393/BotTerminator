@@ -23,6 +23,7 @@ namespace BotTerminator.Data
 		protected WikiBotDatabase(Wiki wiki, String pageName)
 		{
 			this.SubredditWiki = wiki;
+			this.PageName = pageName;
 		}
 
 		public abstract Task<BanListConfig> ReadConfigAsync();

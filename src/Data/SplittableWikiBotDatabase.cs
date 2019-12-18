@@ -22,7 +22,7 @@ namespace BotTerminator.Data
 			WikiSplitConfig meta = JsonConvert.DeserializeObject<WikiSplitConfig>((await SubredditWiki.GetPageAsync(PageName)).MarkdownContent);
 			meta.ValidateSupportedVersion(1, 1);
 			IList<Task<String>> tasks = new List<Task<String>>();
-			for (int i = 0; i < meta.Pages; i++)
+			for (int i = 1; i <= meta.Pages; i++)
 			{
 				tasks.Add(ReadSplit(i));
 			}
