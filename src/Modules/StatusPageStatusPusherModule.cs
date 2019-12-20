@@ -12,7 +12,7 @@ namespace BotTerminator.Modules
 	{
 		private const Int32 MaxRetryValue = 10;
 		
-		private static readonly TimeSpan StatusPagePushWait = new TimeSpan(0, 0, 10);
+		private static readonly TimeSpan StatusPagePushWait = new TimeSpan(0, 0, 30);
 
 		private const String ApiBaseUrl = "https://api.statuspage.io/v1/";
 
