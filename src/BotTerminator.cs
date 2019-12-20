@@ -38,6 +38,7 @@ namespace BotTerminator
 		public const String UsersPageName = "botconfig/botterminator/users";
 
 		internal ConcurrentQueue<Func<HttpRequestMessage>> StatusPageQueue { get; private set; }
+		internal ConcurrentQueue<MetricData> StatusPageQueueData { get; private set; }
 		public ILogger Log { get; }
 		internal AuthenticationConfig AuthenticationConfig { get; private set; }
 		internal GlobalConfig GlobalConfig { get; private set; }

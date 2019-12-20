@@ -8,6 +8,9 @@ namespace BotTerminator.Models
 	[JsonObject]
 	public class MetricData
 	{
+		[JsonIgnore]
+		public String MetricId { get; set; }
+
 		[JsonProperty("timestamp")]
 		public Int64 Timestamp { get; set; }
 
