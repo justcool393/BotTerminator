@@ -35,9 +35,11 @@ namespace BotTerminator.Modules
 
 		protected override sealed async Task RunItemAsync(T thing)
 		{
+			Log.Verbose("Scanning for banned users on thing {ThingFullname}", thing.FullName);
 			String subredditName = thing["subreddit"].Value<String>();
 			if (!bot.SubredditLookup.ContainsKey(subredditName))
 			{
+				Log.Verbose("Subreddit {SubredditName} not in cache. Adding to cache now.", subredditName);
 				await bot.CacheSubredditAsync(subredditName);
 			}
 			CachedSubreddit subreddit = bot.SubredditLookup[subredditName];
@@ -50,6 +52,7 @@ namespace BotTerminator.Modules
 
 			if (await bot.CheckShouldBanAsync(thing, bannedGroups.Select(group => group.Name)))
 			{
+				Log.Debug("Found user {User}. Taking action {Action} based on subreddit setting for {Subreddit}", thing.AuthorName, options.RemovalType.ToString(), subreddit.RedditSubreddit.DisplayName);
 				try
 				{
 					if (options.RemovalType == RemovalType.Spam)
@@ -63,10 +66,11 @@ namespace BotTerminator.Modules
 				}
 				catch (RedditHttpException ex)
 				{
-					Console.WriteLine("Could not remove thing {0} due to HTTP error from reddit: {1}", thing.FullName, ex.Message);
+					Log.Error("Could not remove thing {ThingFullname} due to HTTP error from reddit: {ExceptionMessage}", thing.FullName, ex.Message);
 				}
 				if (options.BanDuration > -1)
 				{
+					Log.Verbose("Banning user {User} now.", thing.AuthorName);
 					await subreddit.RedditSubreddit.BanUserAsync(thing.AuthorName, options.BanNote.Trim(), null, options.BanDuration, options.BanMessage.Trim());
 				}
 			}

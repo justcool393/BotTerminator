@@ -37,6 +37,7 @@ namespace BotTerminator.Modules
 			// hide all of them at once
 			BanListConfig config = await bot.UserLookup.ReadConfigAsync();
 			ICollection<Post> hideable = subredditPosts.Where(post => config.ShouldHide(post)).ToList();
+			Log.Debug("Finished scanning for new users to process (found {PostCount}, hideable {HideableCount}). Hiding posts now.", subredditPosts.Count, hideable.Count);
 			if (subredditPosts.Count > 0)
 			{
 				const String requestVerb = "POST";
