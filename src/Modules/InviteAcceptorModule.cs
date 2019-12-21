@@ -56,7 +56,7 @@ namespace BotTerminator.Modules
 			const String modInviteMsg = "invitation to moderate /r/";
 			PrivateMessage privateMessage = (PrivateMessage)messageAsThing;
 			bool shouldMarkRead = true;
-
+			Log.Verbose("Found message {MessageFullname} to process", privateMessage.FullName);
 			if (privateMessage.Subreddit != null && privateMessage.Subject.StartsWith(modInviteMsg) && 
 				privateMessage.Subject.Length > modInviteMsg.Length)
 			{
@@ -95,6 +95,7 @@ namespace BotTerminator.Modules
 			}
 			if (shouldMarkRead)
 			{
+				Log.Verbose("Marking message {MessageFullName} as read", privateMessage.FullName);
 				try
 				{
 					await privateMessage.SetAsReadAsync();
