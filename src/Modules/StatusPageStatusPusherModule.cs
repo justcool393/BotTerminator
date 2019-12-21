@@ -16,7 +16,7 @@ namespace BotTerminator.Modules
 
 		private const String ApiBaseUrl = "https://api.statuspage.io/v1/";
 
-		private const String ApiMetricPushUrl = ApiBaseUrl + "pages/{0}/metrics/data.json";
+		private const String ApiMetricPushUrl = ApiBaseUrl + "pages/{0}/metrics/data";
 
 		private HttpClient statusPageClient;
 
@@ -35,29 +35,27 @@ namespace BotTerminator.Modules
 				metrics.Add(metric);
 			}
 
+			if (metrics.Count == 0) return;
 			Func<HttpRequestMessage> request = MakeRequest(metrics);
-			while (bot.StatusPageQueue.TryDequeue(out Func<HttpRequestMessage> requestFunction))
+			bool success = false;
+			int retry = 1;
+			while (!success && retry <= MaxRetryValue)
 			{
-				bool success = false;
-				int retry = 1;
-				while (!success && retry <= MaxRetryValue)
+				try
 				{
-					try
-					{
-						HttpResponseMessage response = await statusPageClient.SendAsync(request());
-						response.EnsureSuccessStatusCode();
-						success = true;
-					}
-					catch (Exception ex) when (ex is HttpRequestException || ex is OperationCanceledException)
-					{
-						Log.Error(ex, "Failed to push to status page (try {Retry}/{MaxRetryValue}): {ExceptionMessage}", retry, MaxRetryValue, ex.Message);
-					}
-					finally
-					{
-						await Task.Delay(StatusPagePushWait);
-					}
-					retry++;
+					HttpResponseMessage response = await statusPageClient.SendAsync(request());
+					response.EnsureSuccessStatusCode();
+					success = true;
 				}
+				catch (Exception ex) when (ex is HttpRequestException || ex is OperationCanceledException)
+				{
+					Log.Error(ex, "Failed to push to status page (try {Retry}/{MaxRetryValue}): {ExceptionMessage}", retry, MaxRetryValue, ex.Message);
+				}
+				finally
+				{
+					await Task.Delay(StatusPagePushWait);
+				}
+				retry++;
 			}
 		}
 
@@ -73,12 +71,19 @@ namespace BotTerminator.Modules
 
 		private StringContent MakeContent(IEnumerable<MetricData> metrics)
 		{
-			JObject data = new JObject();
+			JObject objData = new JObject();
+			ISet<String> doneIds = new HashSet<String>();
 			foreach (MetricData metric in metrics)
 			{
-				data.Add(metric.MetricId, JObject.FromObject(metric));
+				if (doneIds.Contains(metric.MetricId))
+				{
+					bot.StatusPageQueueData.Enqueue(metric);
+					continue;
+				}
+				doneIds.Add(metric.MetricId);
+				objData.Add(new JProperty(metric.MetricId, new JArray(JObject.FromObject(metric))));
 			}
-			data = new JObject(new JProperty("data", data));
+			JToken data = new JObject(new JProperty("data", objData));
 			return new StringContent(data.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
 		}
 

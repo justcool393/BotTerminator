@@ -36,9 +36,7 @@ namespace BotTerminator
 		public const Int32 PageLimit = 100;
 		public const String QuarantineOptInUrl = "/api/quarantine";
 		public const String UsersPageName = "botconfig/botterminator/users";
-
-		internal ConcurrentQueue<Func<HttpRequestMessage>> StatusPageQueue { get; private set; }
-		internal ConcurrentQueue<MetricData> StatusPageQueueData { get; private set; }
+		internal ConcurrentQueue<MetricData> StatusPageQueueData { get; private set; };
 		public ILogger Log { get; }
 		internal AuthenticationConfig AuthenticationConfig { get; private set; }
 		internal GlobalConfig GlobalConfig { get; private set; }
@@ -54,7 +52,7 @@ namespace BotTerminator
 			this.WebAgent = webAgent;
 			this.RedditInstance = redditInstance;
 			this.AuthenticationConfig = authenticationConfig;
-			this.StatusPageQueue = new ConcurrentQueue<Func<HttpRequestMessage>>();
+			this.StatusPageQueueData = new ConcurrentQueue<MetricData>();
 			this.Log = log;
 		}
 
