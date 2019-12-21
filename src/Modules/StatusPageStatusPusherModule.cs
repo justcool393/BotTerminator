@@ -49,7 +49,15 @@ namespace BotTerminator.Modules
 				}
 				catch (Exception ex) when (ex is HttpRequestException || ex is OperationCanceledException)
 				{
-					Log.Error(ex, "Failed to push to status page (try {Retry}/{MaxRetryValue}): {ExceptionMessage}", retry, MaxRetryValue, ex.Message);
+					const String template = "Failed to push to status page (try {Retry}/{MaxRetryValue}): {ExceptionMessage}";
+					if (retry > MaxRetryValue)
+					{
+						Log.Error(ex, template, retry, MaxRetryValue, ex.Message);
+					}
+					else
+					{
+						Log.Warning(ex, template, retry, MaxRetryValue, ex.Message);
+					}
 				}
 				finally
 				{
