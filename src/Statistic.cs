@@ -7,6 +7,7 @@ namespace BotTerminator
 {
 	public class Statistic
 	{
+		public bool UseTotalValue { get; set; }
 		public String MetricId { get; set; }
 		public Int32 RecentValue { get => recentValue; set => this.recentValue = value; }
 
@@ -40,13 +41,14 @@ namespace BotTerminator
 			Interlocked.MemoryBarrier();
 		}
 
-		public void PushMetric(BotTerminator bot, bool recentValue = true)
+		public void PushMetric(BotTerminator bot, bool? recentValue = null)
 		{
+			bool pushRecentValue = recentValue == null ? !UseTotalValue : recentValue.Value;
 			bot.StatusPageQueueData.Enqueue(new Models.MetricData()
 			{
 				MetricId = MetricId,
 				Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-				Value = recentValue ? RecentValue : Value,
+				Value = pushRecentValue ? RecentValue : Value,
 			});
 		}
 	}

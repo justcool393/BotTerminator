@@ -35,6 +35,10 @@ namespace BotTerminator.Modules
 				catch (Exception ex)
 				{
 					Log.Error(ex, "Module {ModuleTypeName} failed to run due to {ExceptionType}: {ExceptionMessage}", GetType().Name, ex.GetType().Name, ex.Message);
+					if (bot.Statistics.ContainsKey("errorRate"))
+					{
+						bot.Statistics["errorRate"].Increment();
+					}
 				}
 				if (RunForeverCooldown.Ticks > 0)
 				{
