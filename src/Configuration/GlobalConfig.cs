@@ -28,6 +28,9 @@ namespace BotTerminator.Configuration
 		[JsonProperty("inviteAcceptorMetricId")]
 		public String InviteAcceptorMetricId { get; set; }
 
+		[JsonProperty("metricIds")]
+		public IReadOnlyDictionary<String, String> MetricIds { get; set; }
+
 		[JsonProperty("statusPagePageId")]
 		public String StatusPagePageId { get; set; }
 

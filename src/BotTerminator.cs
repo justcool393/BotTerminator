@@ -36,7 +36,7 @@ namespace BotTerminator
 		public const Int32 PageLimit = 100;
 		public const String QuarantineOptInUrl = "/api/quarantine";
 		public const String UsersPageName = "botconfig/botterminator/users";
-		internal ConcurrentQueue<MetricData> StatusPageQueueData { get; private set; };
+		internal ConcurrentQueue<MetricData> StatusPageQueueData { get; private set; }
 		public ILogger Log { get; }
 		internal AuthenticationConfig AuthenticationConfig { get; private set; }
 		internal GlobalConfig GlobalConfig { get; private set; }
@@ -45,6 +45,9 @@ namespace BotTerminator
 		internal Dictionary<String, CachedSubreddit> SubredditLookup { get; private set; } = new Dictionary<String, CachedSubreddit>();
 		public String SubredditName => AuthenticationConfig.SubredditName;
 		public IBotDatabase UserLookup { get; private set; }
+
+		internal IReadOnlyDictionary<String, Statistic> Statistics { get; private set; }
+
 		internal IWebAgent WebAgent { get; private set; }
 
 		public BotTerminator(IWebAgent webAgent, Reddit redditInstance, AuthenticationConfig authenticationConfig, ILogger log)
