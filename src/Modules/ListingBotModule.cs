@@ -64,7 +64,7 @@ namespace BotTerminator.Modules
 			{
 				if (!(ex.InnerException is ArgumentNullException))
 				{
-					Console.WriteLine("Failed to push to StatusPage: {0}", ex.Message);
+					Log.Warning("Failed to push to StatusPage: {0}", ex.Message);
 				}
 			}
 			await PostRunItemsAsync(things);
