@@ -82,6 +82,7 @@ namespace BotTerminator
 				Log.Warning("Failed to load or create subreddit configuration for {SubredditName}: {ExceptionMessage}", SubredditName, ex.Message);
 				return;
 			}
+			Statistics = GlobalConfig.MetricIds.ToDictionary(key => key.Key, value => new Statistic() { MetricId = value.Value });
 			UserLookup = new CacheableBackedBotDatabase(new SplittableWikiBotDatabase((await RedditInstance.GetSubredditAsync(SubredditName, false)).GetWiki, UsersPageName), new TimeSpan(0, 5, 0));
 			await UserLookup.CheckUserAsync(CacheFreshenerUserName, String.Empty);
 			await UpdateSubredditCacheAsync();
@@ -91,18 +92,27 @@ namespace BotTerminator
 				new CommentScannerModule(this), new PostScannerModule(this),
 				new RemovedPostScannerModule(this), new InviteAcceptorModule(this),
 				new CacheFreshenerModule(this), new UpdateBanListModule(this),
-				new StatusPageStatusPusherModule(this),
+				new StatisticsPusherModule(this), new StatusPageStatusPusherModule(this),
 			};
 
 			await Task.WhenAll(Modules.Select(s => s.RunForeverAsync()));
+		}
+
+		public bool IncrementStatisticIfExists(String statistic)
+		{
+			if (!Statistics.ContainsKey(statistic)) return false;
+			Statistics[statistic].Increment();
+			return true;
 		}
 
 		public async Task CacheSubredditAsync(String subredditName)
 		{
 			Subreddit subreddit = null;
 			// we have to do it this way, otherwise ModPermissions won't be set
+			int count = 0;
 			await RedditInstance.User.GetModeratorSubreddits(-1).ForEachAsync(moderatedSubreddit =>
 			{
+				count++; // we can count the modded subs for stats purposes here
 				if (moderatedSubreddit.DisplayName == SubredditName) subreddit = moderatedSubreddit; 
 			});
 			SubredditLookup[subredditName] = new CachedSubreddit(subreddit, configurationLoader);
