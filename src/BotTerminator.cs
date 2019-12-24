@@ -113,6 +113,10 @@ namespace BotTerminator
 			await RedditInstance.User.GetModeratorSubreddits(-1).ForEachAsync(moderatedSubreddit =>
 			{
 				count++; // we can count the modded subs for stats purposes here
+				if (count % 100 == 1)
+				{
+					IncrementStatisticIfExists("requestRate");
+				}
 				if (moderatedSubreddit.DisplayName == SubredditName) subreddit = moderatedSubreddit; 
 			});
 			SubredditLookup[subredditName] = new CachedSubreddit(subreddit, configurationLoader);
@@ -122,8 +126,13 @@ namespace BotTerminator
 		public async Task UpdateSubredditCacheAsync()
 		{
 			ICollection<Subreddit> moderatedSubreddits = new List<Subreddit>();
+			int count = 0;
 			await RedditInstance.User.GetModeratorSubreddits(-1).ForEachAsync(subreddit =>
 			{
+				if (count % 100 == 1)
+				{
+					IncrementStatisticIfExists("requestRate");
+				}
 				moderatedSubreddits.Add(subreddit);
 			});
 			foreach (Subreddit subreddit in moderatedSubreddits)
@@ -135,6 +144,9 @@ namespace BotTerminator
 					{
 						try
 						{
+							IncrementStatisticIfExists("requestRate");
+							IncrementStatisticIfExists("requestRate");
+							IncrementStatisticIfExists("requestRate");
 							await SubredditLookup[subreddit.DisplayName].SaveDefaultOptionSetAsync(GlobalConfig.GlobalOptions, false);
 						}
 						catch (RedditHttpException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
@@ -183,12 +195,20 @@ namespace BotTerminator
 					return false;
 				}
 			}
+			if (UserLookup is CacheableBackedBotDatabase cacheable)
+			{
+				if (cacheable.IsStale) IncrementStatisticIfExists("requestRate");
+			}
 			IEnumerable<String> groupNames = (await UserLookup.GetGroupsForUserAsync(thing.AuthorName)).Select(group => group.Name);
 			return groupNames.Any(groupName => bannedGroups.Contains(groupName));
 		}
 
 		internal async Task<IReadOnlyCollection<Models.Group>> GetBannedGroupsAsync(AbstractSubredditOptionSet options)
 		{
+			if (UserLookup is CacheableBackedBotDatabase cacheable)
+			{
+				if (cacheable.IsStale) IncrementStatisticIfExists("requestRate");
+			}
 			IReadOnlyCollection<String> actioned = options.ActionedUserTypes.ToHashSet();
 			return actioned.Count == 0 ? await UserLookup.GetDefaultBannedGroupsAsync() : (await UserLookup.GetAllGroupsAsync()).Values.Where(group => actioned.Contains(group.Name)).ToArray();
 		}

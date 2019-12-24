@@ -64,6 +64,8 @@ namespace BotTerminator.Modules
 				try
 				{
 					await (await RedditInstance.GetSubredditAsync(subredditName, false)).AcceptModeratorInviteAsync();
+					bot.IncrementStatisticIfExists("requestRate");
+					bot.IncrementStatisticIfExists("requestRate");
 					Log.Information("Accepted moderator invite to {Subreddit}", "/r/" + subredditName);
 				}
 				catch (RedditHttpException ex)
@@ -84,6 +86,7 @@ namespace BotTerminator.Modules
 					try
 					{
 						Subreddit subreddit = await RedditInstance.GetSubredditAsync(subredditName, false);
+						bot.IncrementStatisticIfExists("requestRate");
 					}
 					catch (RedditHttpException ex)
 					{
@@ -99,6 +102,7 @@ namespace BotTerminator.Modules
 				try
 				{
 					await privateMessage.SetAsReadAsync();
+					bot.IncrementStatisticIfExists("requestRate");
 				}
 				catch (Exception ex)
 				{
@@ -115,6 +119,7 @@ namespace BotTerminator.Modules
 				try
 				{
 					await bot.QuarantineOptInAsync(subredditName);
+					bot.IncrementStatisticIfExists("requestRate");
 					Log.Information("Opted in to the quarantine for subreddit {Subreddit}", "/r/" + subredditName);
 					return true;
 				}

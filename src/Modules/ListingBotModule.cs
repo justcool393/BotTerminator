@@ -31,9 +31,16 @@ namespace BotTerminator.Modules
 		{
 			HashSet<String> fullnames = new HashSet<String>();
 			ICollection<T> things = new List<T>();
-
+			int processedItems = 0;
+			bot.IncrementStatisticIfExists("requestRate");
+			Log.Verbose("Processing listing of {Type}", typeof(T).Name);
 			await Listing.ForEachAsync(thing =>
 			{
+				processedItems++;
+				if (processedItems % 100 == 1 && processedItems != 1)
+				{
+					bot.IncrementStatisticIfExists("requestRate");
+				}
 				if (RequireUnique && fullnames.Contains(thing.FullName)) return;
 				if (thing != null && PreRunItem(thing))
 				{
@@ -41,6 +48,7 @@ namespace BotTerminator.Modules
 					things.Add(thing);
 				}
 			});
+			Log.Verbose("Found {ProcessedItems}, {Items} of which will be processed", processedItems, things.Count);
 			if (RequireInOrder)
 			{
 				foreach (T thing in things)
@@ -64,7 +72,7 @@ namespace BotTerminator.Modules
 			{
 				if (!(ex.InnerException is ArgumentNullException))
 				{
-					Log.Warning("Failed to push to StatusPage: {0}", ex.Message);
+					Log.Warning("Failed to push to StatusPage: {ExceptionMessage}", ex.Message);
 				}
 			}
 			await PostRunItemsAsync(things);

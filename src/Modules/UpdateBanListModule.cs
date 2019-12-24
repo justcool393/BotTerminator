@@ -46,6 +46,7 @@ namespace BotTerminator.Modules
 				{
 					String formattedUrl = String.Format("{0}?id={1}", BotTerminator.HideUrl, String.Join(",", subredditPosts.Select(post => post.FullName).Skip(i).Take(25)));
 					tasks.Add(bot.WebAgent.ExecuteRequestAsync(() => bot.WebAgent.CreateRequest(formattedUrl, requestVerb)));
+					bot.IncrementStatisticIfExists("requestRate");
 				}
 				await Task.WhenAll(tasks);
 			}
