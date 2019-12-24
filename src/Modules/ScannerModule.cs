@@ -48,6 +48,8 @@ namespace BotTerminator.Modules
 			if (!options.ScanPosts && thing is Post) return;
 			if (!options.ScanComments && thing is Comment) return;
 
+			bot.IncrementStatisticIfExists("postCommentCount");
+
 			IReadOnlyCollection<Group> bannedGroups = await bot.GetBannedGroupsAsync(options);
 
 			if (await bot.CheckShouldBanAsync(thing, bannedGroups.Select(group => group.Name)))
@@ -58,10 +60,12 @@ namespace BotTerminator.Modules
 					if (options.RemovalType == RemovalType.Spam)
 					{
 						await thing.RemoveSpamAsync();
+						bot.IncrementStatisticIfExists("requestRate");
 					}
 					else if (options.RemovalType == RemovalType.Remove)
 					{
 						await thing.RemoveAsync();
+						bot.IncrementStatisticIfExists("requestRate");
 					}
 				}
 				catch (RedditHttpException ex)
@@ -72,6 +76,7 @@ namespace BotTerminator.Modules
 				{
 					Log.Verbose("Banning user {User} now.", thing.AuthorName);
 					await subreddit.RedditSubreddit.BanUserAsync(thing.AuthorName, options.BanNote.Trim(), null, options.BanDuration, options.BanMessage.Trim());
+					bot.IncrementStatisticIfExists("requestRate");
 				}
 			}
 		}
