@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,8 +35,8 @@ namespace BotTerminator.Modules
 			{
 				metrics.Add(metric);
 			}
-
 			if (metrics.Count == 0) return;
+
 			Func<HttpRequestMessage> request = MakeRequest(metrics);
 			bool success = false;
 			int retry = 1;
@@ -80,16 +81,9 @@ namespace BotTerminator.Modules
 		private StringContent MakeContent(IEnumerable<MetricData> metrics)
 		{
 			JObject objData = new JObject();
-			ISet<String> doneIds = new HashSet<String>();
-			foreach (MetricData metric in metrics)
+			foreach (IGrouping<String, MetricData> grouping in metrics.ToLookup(metric => metric.MetricId, metric => metric)) 
 			{
-				if (doneIds.Contains(metric.MetricId))
-				{
-					bot.StatusPageQueueData.Enqueue(metric);
-					continue;
-				}
-				doneIds.Add(metric.MetricId);
-				objData.Add(new JProperty(metric.MetricId, new JArray(JObject.FromObject(metric))));
+				objData.Add(new JProperty(grouping.Key, JArray.FromObject(grouping)));
 			}
 			JToken data = new JObject(new JProperty("data", objData));
 			return new StringContent(data.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
