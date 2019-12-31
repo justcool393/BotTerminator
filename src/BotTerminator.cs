@@ -94,7 +94,7 @@ namespace BotTerminator
 				new CacheFreshenerModule(this), new UpdateBanListModule(this),
 				new StatisticsPusherModule(this), new StatusPageStatusPusherModule(this),
 			};
-
+			RedditInstance.RateLimit = RateLimitMode.SmallBurst; // we don't need to send lots of requests at once, let's pace ourselves
 			await Task.WhenAll(Modules.Select(s => s.RunForeverAsync()));
 		}
 
