@@ -91,7 +91,7 @@ namespace BotTerminator
 			this.Modules = new List<BotModule>()
 			{
 				new CommentScannerModule(this), new PostScannerModule(this),
-				new RemovedPostScannerModule(this), new InviteAcceptorModule(this),
+				/*new RemovedPostScannerModule(this),*/ new InviteAcceptorModule(this),
 				new CacheFreshenerModule(this), new UpdateBanListModule(this),
 				new StatisticsPusherModule(this), new StatusPageStatusPusherModule(this),
 			};

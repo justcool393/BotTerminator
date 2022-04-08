@@ -37,8 +37,8 @@ namespace BotTerminator.Modules
 			// hide all of them at once
 			BanListConfig config = await bot.UserLookup.ReadConfigAsync();
 			ICollection<Post> hideable = subredditPosts.Where(post => config.ShouldHide(post)).ToList();
-			Log.Debug("Finished scanning for new users to process (found {PostCount}, hideable {HideableCount}). Hiding posts now.", subredditPosts.Count, hideable.Count);
-			if (subredditPosts.Count > 0)
+			Log.Debug("Finished scanning for new users to process (found {PostCount}, hideable {HideableCount}).", subredditPosts.Count, hideable.Count);
+			/*if (subredditPosts.Count > 0)
 			{
 				const String requestVerb = "POST";
 				IList<Task> tasks = new List<Task>();
@@ -49,7 +49,7 @@ namespace BotTerminator.Modules
 					bot.IncrementStatisticIfExists("requestRate");
 				}
 				await Task.WhenAll(tasks);
-			}
+			}*/
 		}
 
 		protected override Boolean PreRunItem(Post subredditPost)

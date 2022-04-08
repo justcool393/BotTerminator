@@ -45,7 +45,7 @@ namespace BotTerminator
 		private static ILogger LoadLogConfig(String logFileName = defaultLogFileName)
 		{
 			return new LoggerConfiguration()
-				   .MinimumLevel.Verbose()
+				   .MinimumLevel.Debug()
 				   .WriteTo.Console()
 				   .WriteTo.RollingFile(logFileName, retainedFileCountLimit: null)
 				   .CreateLogger();
