@@ -3,6 +3,7 @@ using BotTerminator.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BotTerminator.Data
@@ -16,9 +17,12 @@ namespace BotTerminator.Data
 		protected TimeSpan Ttl { get; set; } = TimeSpan.MaxValue;
 		public Boolean IsStale => DateTimeOffset.UtcNow - LastUpdated > Ttl;
 
+		private SemaphoreSlim UpdateSemaphore { get; } = new SemaphoreSlim(1, 1);
+
 		protected async Task UpdateIfStaleAsync(bool read = true, bool force = false)
 		{
-			if (force || IsStale)
+			await UpdateSemaphore.WaitAsync();
+			if (force || !read || IsStale)
 			{
 				if (read)
 				{
@@ -30,6 +34,7 @@ namespace BotTerminator.Data
 				}
 				LastUpdated = DateTimeOffset.UtcNow;
 			}
+			UpdateSemaphore.Release();
 		}
 
 		public async Task<BanListConfig> ReadConfigAsync()

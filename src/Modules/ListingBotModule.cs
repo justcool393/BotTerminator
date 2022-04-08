@@ -33,7 +33,7 @@ namespace BotTerminator.Modules
 			ICollection<T> things = new List<T>();
 			int processedItems = 0;
 			bot.IncrementStatisticIfExists("requestRate");
-			Log.Verbose("Processing listing of {Type}", typeof(T).Name);
+			Log.Verbose("Processing listing of {Type} in module with type {ModuleType}", typeof(T).Name, GetType().Name);
 			await Listing.ForEachAsync(thing =>
 			{
 				processedItems++;
@@ -48,7 +48,7 @@ namespace BotTerminator.Modules
 					things.Add(thing);
 				}
 			});
-			Log.Verbose("Found {ProcessedItems}, {Items} of which will be processed", processedItems, things.Count);
+			Log.Verbose("Found {ProcessedItems}, {Items} of which will be processed in module with type {ModuleType}", processedItems, things.Count, GetType().Name);
 			if (RequireInOrder)
 			{
 				foreach (T thing in things)
@@ -75,6 +75,7 @@ namespace BotTerminator.Modules
 					Log.Warning("Failed to push to StatusPage: {ExceptionMessage}", ex.Message);
 				}
 			}
+			Log.Verbose("Done processing items for module of type {ModuleType}", GetType().Name);
 			await PostRunItemsAsync(things);
 		}
 	}

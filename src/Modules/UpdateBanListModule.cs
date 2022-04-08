@@ -21,10 +21,10 @@ namespace BotTerminator.Modules
 			RequireUnique = true;
 		}
 
-		public override Task SetupAsync()
+		public override async Task SetupAsync()
 		{
 			Log.Information("Starting update ban list module");
-			return Task.CompletedTask;
+			await bot.UserLookup.ReadConfigAsync();
 		}
 
 		public override async Task TeardownAsync()

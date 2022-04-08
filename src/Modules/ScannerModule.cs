@@ -75,7 +75,14 @@ namespace BotTerminator.Modules
 				if (options.BanDuration > -1)
 				{
 					Log.Verbose("Banning user {User} now.", thing.AuthorName);
-					await subreddit.RedditSubreddit.BanUserAsync(thing.AuthorName, options.BanNote.Trim(), null, options.BanDuration, options.BanMessage.Trim());
+					try
+					{
+						await subreddit.RedditSubreddit.BanUserAsync(thing.AuthorName, options.BanNote.Trim(), null, options.BanDuration, options.BanMessage.Trim());
+					}
+					catch (RedditHttpException ex)
+					{
+						Log.Error("Could not ban user {Username} (for {ThingFullname}) due to HTTP error from reddit: {ExceptionMessage}", thing.AuthorName, thing.FullName, ex.Message);
+					}
 					bot.IncrementStatisticIfExists("requestRate");
 				}
 			}

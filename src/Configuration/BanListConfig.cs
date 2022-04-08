@@ -51,10 +51,16 @@ namespace BotTerminator.Configuration
 			return GroupLookup.Values.Any(group => group.Members.Contains(username));
 		}
 
+		public bool AnyGroupExists(String groups)
+		{
+			String[] groupsAsArray = groups.Split(' ');
+			return GroupLookup.Keys.Any(group => groupsAsArray.Contains(group));
+		}
+
 		public bool ShouldHide(Post post)
 		{
 			String cssClass = post.LinkFlairCssClass;
-			return IsInAnyGroup(cssClass) || NonGroupFlairCssClasses.Contains(cssClass);
+			return AnyGroupExists(cssClass) || NonGroupFlairCssClasses.Contains(cssClass);
 		}
 	}
 }

@@ -68,6 +68,7 @@ namespace BotTerminator
 				const String pageName = "botConfig/botTerminator";
 				if (!(await subredditWiki.GetPageNamesAsync()).Contains(pageName.ToLower()))
 				{
+					Log.Verbose("Creating BotTerminator configuration page...");
 					GlobalConfig = new GlobalConfig();
 					await subredditWiki.EditPageAsync(pageName, JsonConvert.SerializeObject(GlobalConfig), null, "create BotTerminator configuration");
 					await subredditWiki.SetPageSettingsAsync(pageName, true, WikiPageSettings.WikiPagePermissionLevel.Mods);
@@ -84,7 +85,7 @@ namespace BotTerminator
 			}
 			Statistics = GlobalConfig.MetricIds.ToDictionary(key => key.Key, value => new Statistic() { MetricId = value.Value });
 			UserLookup = new CacheableBackedBotDatabase(new SplittableWikiBotDatabase((await RedditInstance.GetSubredditAsync(SubredditName, false)).GetWiki, UsersPageName), new TimeSpan(0, 5, 0));
-			await UserLookup.CheckUserAsync(CacheFreshenerUserName, String.Empty);
+			await UserLookup.ReadConfigAsync();
 			await UpdateSubredditCacheAsync();
 
 			this.Modules = new List<BotModule>()
